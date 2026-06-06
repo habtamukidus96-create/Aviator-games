@@ -214,6 +214,7 @@
                     <span class="px-2 py-0.5 rounded-md font-bold ${h >= 2 ? 'bg-purple-950 text-purple-400 border border-purple-800/30' : 'bg-gray-800 text-blue-400'}">${h.toFixed(2)}x</span>
                 `).join('');
 
+                // 1. WAITING COUNTDOWN PHASE
                 if (s.status === "WAITING") {
                     display.innerText = `Next flight in ${s.timer}s`;
                     display.className = "text-2xl font-black text-yellow-500";
@@ -222,16 +223,16 @@
                     plane.style.transform = "translate(0px, 0px) scale(0.7)";
                     
                     if (s.activeBets[key]) {
+                        aviatorBetPlaced = true;
                         btn.innerText = "Bet Locked In ✔";
                         btn.className = "w-full bg-gray-800 text-emerald-400 font-black py-2.5 rounded-xl text-sm uppercase cursor-not-allowed border border-emerald-500/20";
-                    } else if (s.nextRoundBets[key]) {
-                        btn.innerText = "Waiting for Round...";
-                        btn.className = "w-full bg-gray-800 text-gray-500 font-bold py-2.5 rounded-xl text-sm uppercase cursor-not-allowed";
                     } else {
+                        aviatorBetPlaced = false;
                         btn.innerText = "Place Bet";
                         btn.className = "w-full bg-emerald-500 text-white font-black py-2.5 rounded-xl text-sm uppercase tracking-wider transition-all";
                     }
                 } 
+                // 2. ACTIVE AIRBORNE FLIGHT PHASE
                 else if (s.status === "FLYING") {
                     display.innerText = `${s.multiplier.toFixed(2)}x`;
                     display.className = "text-5xl font-black text-red-500 animate-pulse";
@@ -242,25 +243,30 @@
                     plane.style.transform = `translate(${distance}px, -${distance/1.5}px) scale(1)`;
 
                     if (s.activeBets[key]) {
+                        // User has an active bet running in this flight
                         aviatorBetPlaced = true; 
                         aviatorActiveStake = s.activeBets[key];
                         btn.innerText = `Cash Out (ETB ${(aviatorActiveStake * s.multiplier).toFixed(2)})`;
                         btn.className = "w-full bg-orange-500 text-gray-950 font-black py-2.5 rounded-xl text-sm uppercase tracking-wider transition-all scale-100 animate-bounce";
                     } else if (s.nextRoundBets[key]) {
+                        // Bet is queued up in line for the next game round
+                        aviatorBetPlaced = false;
                         btn.innerText = "Queued for Next Flight";
                         btn.className = "w-full bg-gray-800 text-yellow-500 font-bold py-2.5 rounded-xl text-xs uppercase cursor-not-allowed border border-yellow-500/20";
                     } else {
+                        aviatorBetPlaced = false;
                         btn.innerText = "Place Bet (For Next Flight)";
                         btn.className = "w-full bg-blue-600 text-white font-black py-2.5 rounded-xl text-xs uppercase tracking-wider transition-all";
                     }
                 } 
+                // 3. CRASH EVENT
                 else if (s.status === "CRASHED") {
                     display.innerText = "FLEW AWAY!";
-                    display.className = "text-3xl font-black text-gray-600 animate-none";
+                    display.className = "text-3xl font-black text-gray-600";
                     msg.innerText = `Crashed @ ${s.history[0]}x`;
                     plane.style.opacity = "0";
 
-                    if (aviatorBetPlaced) {
+                    if (aviatorBetPlaced && !s.nextRoundBets[key]) {
                         aviatorBetPlaced = false; 
                         btn.innerText = "Place Bet";
                         btn.className = "w-full bg-emerald-500 text-white font-black py-2.5 rounded-xl text-sm uppercase tracking-wider";
@@ -285,7 +291,10 @@
                         body: JSON.stringify({ username: currentUser, stake: amount })
                     });
                     const res = await r.json();
-                    if (res.success) { loadUserProfile(); } else { alert(res.message || "Execution Error"); }
+                    if (res.success) { 
+                        aviatorBetPlaced = true;
+                        loadUserProfile(); 
+                    } else { alert(res.message || "Execution Error"); }
                 } catch (e) { alert("Bet transmission failed"); }
             } else {
                 try {
