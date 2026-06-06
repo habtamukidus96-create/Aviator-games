@@ -8,18 +8,18 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
-// Serve static frontend UI assets instantly from the root directory
+// Serve static frontend UI assets instantly from root directory
 app.use(express.static(path.join(__dirname, '.')));
 
 // =========================================================================
-// 1. DATABASE STATE (In-Memory Simulation)
+// 1. DATA CORE STATE (In-Memory Simulation Store)
 // =========================================================================
 let userWallet = {
-    balance: 750.00, // Preloading test account state with 750 ETB
+    balance: 750.00, // Preloading test account balance with 750 ETB
     currency: "ETB"
 };
 
-let placedBets = []; // Holds the dynamic receipt history array
+let placedBets = []; // Dynamic historic bet slips ledger array
 
 let liveMatches = [
     {
@@ -45,29 +45,28 @@ let liveMatches = [
 ];
 
 // =========================================================================
-// 2. API ENDPOINTS / ROUTES
+// 2. ENDPOINTS & BUSINESS LOGIC ROUTING
 // =========================================================================
 
-// Endpoint A: Fetch the live matches array
+// Endpoint A: Fetch the real-time match data list
 app.get('/api/matches', (req, res) => {
     res.json(liveMatches);
 });
 
-// Endpoint B: Read current wallet account state
+// Endpoint B: Read current wallet profile account status
 app.get('/api/user/profile', (req, res) => {
     res.json(userWallet);
 });
 
-// Endpoint C: Fetch all bets placed by the current user session
+// Endpoint C: Fetch historical bets placed by current session
 app.get('/api/bets/history', (req, res) => {
     res.json(placedBets);
 });
 
-// Endpoint D: Validate and process transactional bet placements
+// Endpoint D: Process core transactional voucher creation
 app.post('/api/bets/place', (req, res) => {
     const { selection, odds, stake } = req.body;
 
-    // Strict validation blocks
     if (!selection || !odds || !stake) {
         return res.status(400).json({ success: false, message: "Invalid payload parameters processing slip." });
     }
@@ -81,24 +80,21 @@ app.post('/api/bets/place', (req, res) => {
         return res.status(400).json({ success: false, message: "Insufficient ETB balance inside your digital wallet." });
     }
 
-    // Deduct funds from user state wallet balance
+    // Deduct active funds from state profile structure
     userWallet.balance -= numericStake;
 
-    // Build the dynamic transactional slip record object
     const transactionRecord = {
         id: 'TX_' + Math.random().toString(36).substr(2, 9).toUpperCase(),
         selection,
         odds: parseFloat(odds),
         stake: numericStake,
         estReturn: parseFloat((numericStake * odds).toFixed(2)),
-        status: 'OPEN', // Default state for dynamic tracking later
+        status: 'OPEN',
         timestamp: new Date()
     };
 
-    // Save ticket into backend log array arrays
     placedBets.push(transactionRecord);
 
-    // Return success to the phone layout
     res.json({
         success: true,
         message: "Bet voucher accepted and registered into backend database logs!",
@@ -107,16 +103,53 @@ app.post('/api/bets/place', (req, res) => {
     });
 });
 
-// =========================================================================
-// 3. SERVER INITIALIZATION & ROUTING CATCH-ALL
-// =========================================================================
+// Endpoint E: SECRET ADMIN SETTLEMENT SIMULATOR ROUTE
+app.get('/api/admin/settle-results', (req, res) => {
+    // 1. Force state updates simulation (Liverpool wins 1-0, Real Madrid wins 2-1)
+    liveMatches[0].homeScore = 1;
+    liveMatches[0].awayScore = 0;
+    liveMatches[0].time = "Finished";
+    
+    liveMatches[1].homeScore = 2;
+    liveMatches[1].awayScore = 1;
+    liveMatches[1].time = "Finished";
 
-// Catch-all route to serve the primary web layout safely if pages reload
+    let totalPaidOut = 0;
+
+    // 2. Compute outstanding ticket validations
+    placedBets.forEach(bet => {
+        if (bet.status === 'OPEN') {
+            let won = false;
+
+            // Mapping selection evaluations against simulation rules
+            if (bet.selection === "Liverpool" && liveMatches[0].homeScore > liveMatches[0].awayScore) won = true;
+            if (bet.selection === "Real Madrid" && liveMatches[1].homeScore > liveMatches[1].awayScore) won = true;
+            
+            if (won) {
+                bet.status = 'WON';
+                userWallet.balance += bet.estReturn; // Credit client purse
+                totalPaidOut += bet.estReturn;
+            } else {
+                bet.status = 'LOST';
+            }
+        }
+    });
+
+    res.json({
+        success: true,
+        message: "All current sports lines successfully settled and tickets processed!",
+        totalPaidOut: `ETB ${totalPaidOut.toFixed(2)}`,
+        systemWalletBalance: `ETB ${userWallet.balance.toFixed(2)}`
+    });
+});
+
+// =========================================================================
+// 3. INITIALIZATION AND CATCH-ALL ROUTER MAP
+// =========================================================================
 app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// Start up the application server engine execution pool
 app.listen(PORT, () => {
     console.log(`Live application engine mapping requests seamlessly on port ${PORT}`);
 });
