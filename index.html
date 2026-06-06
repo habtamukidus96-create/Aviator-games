@@ -16,7 +16,7 @@
                 <i class="fa-solid fa-wallet text-yellow-500 text-xs"></i>
                 <span id="walletBalance" class="text-sm font-bold">ETB 0.00</span>
             </div>
-            <button class="bg-yellow-500 text-gray-950 font-bold px-4 py-1.5 rounded-lg text-sm">Join</button>
+            <button id="authBtn" onclick="openAuthModal()" class="bg-yellow-500 text-gray-950 font-bold px-4 py-1.5 rounded-lg text-sm transition-all active:scale-95">Login</button>
         </div>
     </header>
 
@@ -62,13 +62,46 @@
         <div id="historyFeed" class="space-y-3 overflow-y-auto pb-4 flex-1"></div>
     </div>
 
+    <div id="authModal" class="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50 hidden backdrop-blur-xs">
+        <div class="bg-gray-900 border border-gray-800 w-full max-w-sm rounded-2xl p-6 relative">
+            <button onclick="closeAuthModal()" class="absolute top-4 right-4 text-gray-500 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+            <h3 class="text-lg font-black text-white mb-1"><i class="fa-solid fa-user-shield text-yellow-500 mr-2"></i> Access Account</h3>
+            <p class="text-xs text-gray-500 mb-4">Enter a username to instantly register or log in.</p>
+            
+            <div class="space-y-3 mb-4">
+                <div>
+                    <label class="text-[10px] font-bold text-gray-400 uppercase block mb-1">Username</label>
+                    <input type="text" id="usernameInput" placeholder="e.g., alex45" class="w-full bg-gray-950 border border-gray-700 rounded-xl p-2.5 text-sm font-bold text-white focus:outline-none focus:border-yellow-500">
+                </div>
+            </div>
+            <button onclick="handleAuthSubmit()" class="w-full bg-yellow-500 text-gray-950 font-black py-2.5 rounded-xl text-sm uppercase tracking-wider">Connect Account</button>
+        </div>
+    </div>
+
     <script>
         let currentSelection = null;
+        let currentUser = localStorage.getItem('bet_username') || null; // Sticky client-side authentication storage
         const API_URL = window.location.origin;
 
+        // Check login state immediately on startup
+        function checkUserSession() {
+            const authBtn = document.getElementById('authBtn');
+            if (currentUser) {
+                authBtn.innerText = currentUser;
+                authBtn.classList.replace('bg-yellow-500', 'bg-gray-800');
+                authBtn.classList.replace('text-gray-950', 'text-gray-400');
+                authBtn.onclick = logoutUser;
+            } else {
+                authBtn.innerText = "Login";
+                authBtn.className = "bg-yellow-500 text-gray-950 font-bold px-4 py-1.5 rounded-lg text-sm transition-all active:scale-95";
+                authBtn.onclick = openAuthModal;
+            }
+        }
+
         async function loadUserProfile() {
+            if (!currentUser) return;
             try {
-                const r = await fetch(`${API_URL}/api/user/profile`);
+                const r = await fetch(`${API_URL}/api/user/profile?username=${currentUser}`);
                 const d = await r.json();
                 document.getElementById('walletBalance').innerText = `${d.currency} ${d.balance.toFixed(2)}`;
             } catch (err) {
@@ -110,8 +143,12 @@
         }
 
         async function loadBetHistory() {
+            if (!currentUser) {
+                document.getElementById('historyFeed').innerHTML = `<div class="text-center py-8 text-gray-500 text-xs font-semibold">Please login to view bet history.</div>`;
+                return;
+            }
             try {
-                const r = await fetch(`${API_URL}/api/bets/history`);
+                const r = await fetch(`${API_URL}/api/bets/history?username=${currentUser}`);
                 const bets = await r.json();
                 const feed = document.getElementById('historyFeed');
                 
@@ -147,21 +184,59 @@
             }
         }
 
+        function openAuthModal() { document.getElementById('authModal').classList.remove('hidden'); }
+        function closeAuthModal() { document.getElementById('authModal').classList.add('hidden'); }
+        
+        function logoutUser() {
+            if(confirm("Do you want to sign out?")) {
+                localStorage.removeItem('bet_username');
+                currentUser = null;
+                document.getElementById('walletBalance').innerText = "ETB 0.00";
+                checkUserSession();
+                clearSlip();
+            }
+        }
+
+        async function handleAuthSubmit() {
+            const input = document.getElementById('usernameInput').value.trim().toLowerCase();
+            if(!input) return alert("Please enter a valid username");
+
+            // Register/Login user session securely via backend
+            try {
+                const r = await fetch(`${API_URL}/api/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: input })
+                });
+                const res = await r.json();
+                
+                if (res.success) {
+                    localStorage.setItem('bet_username', input);
+                    currentUser = input;
+                    closeAuthModal();
+                    checkUserSession();
+                    loadUserProfile();
+                }
+            } catch(e) {
+                alert("Authentication connection failed.");
+            }
+        }
+
         function toggleSelection(btn, pick, odds) {
-            // Remove highlighting borders from all buttons inside match cards
+            if (!currentUser) return openAuthModal(); // Prevent unauthenticated users from betting
+            
             document.querySelectorAll('#matchContainer button').forEach(b => b.classList.remove('border-yellow-500', 'bg-yellow-500/10'));
             
             if (currentSelection === pick) {
                 clearSlip();
             } else {
                 currentSelection = pick;
-                // Add yellow focus boundary selection rings to chosen card odd trigger
                 btn.classList.add('border-yellow-500', 'bg-yellow-500/10');
                 
                 document.getElementById('slipSelection').innerText = `Selection: ${pick}`;
                 document.getElementById('slipOdds').innerText = odds;
                 document.getElementById('betSlip').classList.remove('translate-y-full');
-                toggleHistoryPanel(false); // Close history drawer if active
+                toggleHistoryPanel(false);
                 calculateReturn();
             }
         }
@@ -181,7 +256,7 @@
         function toggleHistoryPanel(open) {
             const panel = document.getElementById('historyPanel');
             if (open) {
-                clearSlip(); // Collapse betslip modal before expanding history view
+                clearSlip();
                 loadBetHistory();
                 panel.classList.remove('translate-y-full');
             } else {
@@ -190,7 +265,7 @@
         }
 
         async function submitBet() {
-            if (!currentSelection) return;
+            if (!currentSelection || !currentUser) return;
             const odds = document.getElementById('slipOdds').innerText;
             const stake = document.getElementById('stakeInput').value;
 
@@ -198,7 +273,7 @@
                 const res = await fetch(`${API_URL}/api/bets/place`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ selection: currentSelection, odds: odds, stake: stake })
+                    body: JSON.stringify({ username: currentUser, selection: currentSelection, odds: odds, stake: stake })
                 });
                 const data = await res.json();
                 
@@ -215,15 +290,15 @@
         }
 
         window.onload = () => { 
-    loadUserProfile(); 
-    displayMatches(); 
+            checkUserSession();
+            loadUserProfile(); 
+            displayMatches(); 
 
-    // Auto-refresh the match display data every 5 seconds!
-    setInterval(() => {
-        displayMatches();
-        loadUserProfile();
-    }, 5000);
-};
+            setInterval(() => {
+                displayMatches();
+                loadUserProfile();
+            }, 5000);
+        };
     </script>
 </body>
 </html>
