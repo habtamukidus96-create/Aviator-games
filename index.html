@@ -9,6 +9,7 @@
 </head>
 <body class="bg-gray-950 text-gray-100 min-h-screen pb-24 font-sans select-none">
 
+    <!-- Header -->
     <header class="bg-gray-900 border-b border-gray-800 sticky top-0 z-40 px-4 py-3 flex justify-between items-center">
         <span class="text-yellow-500 text-xl font-black uppercase">Addis<span class="text-white bg-yellow-500 px-1 rounded-sm ml-1 text-gray-950">Bet</span></span>
         <div class="flex items-center gap-3">
@@ -20,35 +21,35 @@
         </div>
     </header>
 
-    <div class="bg-gray-900/50 border-b border-gray-800 p-1 flex max-w-md mx-auto mt-2 rounded-xl sticky top-[57px] z-30 backdrop-blur-md">
-        <button onclick="switchTab('sports')" id="tab-sports" class="flex-1 py-2.5 text-xs font-black uppercase text-center rounded-lg bg-yellow-500 text-gray-950 transition-all">
-            <i class="fa-solid fa-futbol mr-1.5"></i> Sports Live
+    <!-- Tab Navigation Bar -->
+    <div class="bg-gray-900/50 border-b border-gray-800 p-1 flex max-w-md mx-auto mt-2 rounded-xl sticky top-[57px] z-30 backdrop-blur-md gap-1">
+        <button onclick="switchTab('sports')" id="tab-sports" class="flex-1 py-2 text-[11px] font-black uppercase text-center rounded-lg bg-yellow-500 text-gray-950 transition-all">
+            <i class="fa-solid fa-futbol mr-1"></i> Sports
         </button>
-        <button onclick="switchTab('aviator')" id="tab-aviator" class="flex-1 py-2.5 text-xs font-black uppercase text-center rounded-lg text-gray-400 hover:text-white transition-all">
-            <i class="fa-solid fa-plane-departure mr-1.5 text-red-500"></i> Aviator
+        <button onclick="switchTab('aviator')" id="tab-aviator" class="flex-1 py-2 text-[11px] font-black uppercase text-center rounded-lg text-gray-400 hover:text-white transition-all">
+            <i class="fa-solid fa-plane-departure mr-1 text-red-500"></i> Aviator
+        </button>
+        <button onclick="switchTab('games')" id="tab-games" class="flex-1 py-2 text-[11px] font-black uppercase text-center rounded-lg text-gray-400 hover:text-white transition-all">
+            <i class="fa-solid fa-gamepad mr-1 text-blue-400"></i> Games
         </button>
     </div>
 
+    <!-- ================= SPORTS VIEW ================= -->
     <main id="sportsView" class="p-3 max-w-md mx-auto space-y-4">
         <div id="matchContainer" class="space-y-4"></div>
     </main>
 
+    <!-- ================= AVIATOR VIEW ================= -->
     <main id="aviatorView" class="p-3 max-w-md mx-auto space-y-4 hidden">
         <div id="aviatorHistory" class="flex gap-1.5 overflow-x-auto py-1 px-0.5 text-[10px] font-mono scrollbar-none"></div>
-
         <div class="bg-gray-900 border border-gray-800 aspect-video rounded-2xl relative overflow-hidden flex flex-col items-center justify-center shadow-2xl">
             <div class="absolute inset-0 bg-[linear-gradient(to_right,#1f2937_1px,transparent_1px),linear-gradient(to_bottom,#1f2937_1px,transparent_1px)] bg-[size:24px_24px] opacity-20"></div>
-            
             <div class="z-10 text-center">
                 <h1 id="aviatorDisplay" class="text-4xl font-black tracking-tight text-white">1.00x</h1>
                 <p id="aviatorMessage" class="text-[10px] uppercase font-bold tracking-widest text-gray-500 mt-1">Waiting for flight...</p>
             </div>
-
-            <div id="planeObject" class="absolute bottom-6 left-6 text-red-500 text-3xl opacity-0 scale-70 transition-all duration-100 ease-out">
-                <i class="fa-solid fa-plane-up"></i>
-            </div>
+            <div id="planeObject" class="absolute bottom-6 left-6 text-red-500 text-3xl opacity-0 scale-70 transition-all duration-100 ease-out"><i class="fa-solid fa-plane-up"></i></div>
         </div>
-
         <div class="bg-gray-900 border border-gray-800 rounded-2xl p-4 shadow-xl space-y-4">
             <div class="grid grid-cols-2 gap-3 items-center">
                 <div>
@@ -56,61 +57,76 @@
                     <input type="number" id="aviatorStake" value="100" class="w-full bg-gray-950 border border-gray-700 rounded-xl p-2.5 text-sm font-bold focus:outline-none focus:border-red-500">
                 </div>
                 <div class="pt-5">
-                    <button id="aviatorActionBtn" onclick="handleAviatorAction()" class="w-full bg-emerald-500 text-white font-black py-2.5 rounded-xl text-sm uppercase tracking-wider transition-all active:scale-95 shadow-lg shadow-emerald-950/20">
-                        Place Bet
-                    </button>
+                    <button id="aviatorActionBtn" onclick="handleAviatorAction()" class="w-full bg-emerald-500 text-white font-black py-2.5 rounded-xl text-sm uppercase tracking-wider transition-all">Place Bet</button>
                 </div>
             </div>
         </div>
     </main>
 
+    <!-- ================= INTEGRATED PASCO MOCK GAMES VIEW ================= -->
+    <main id="gamesView" class="p-3 max-w-md mx-auto space-y-4 hidden">
+        <div id="gamesCatalog" class="grid grid-cols-2 gap-3">
+            <!-- Game Item 1 -->
+            <div onclick="launchMockGame('Pascal Dice')" class="bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden shadow-xl active:scale-95 transition-all cursor-pointer group">
+                <div class="h-28 bg-gradient-to-br from-purple-600 to-indigo-900 flex items-center justify-center relative">
+                    <i class="fa-solid fa-dice text-4xl text-white group-hover:rotate-12 transition-transform"></i>
+                    <span class="absolute bottom-2 left-2 text-[8px] bg-black/60 px-1.5 py-0.5 rounded text-purple-300 font-bold tracking-widest uppercase">Pascal Games</span>
+                </div>
+                <div class="p-3 bg-gray-900"><h4 class="text-xs font-black text-white">Pascal Dice</h4><p class="text-[9px] text-gray-500 mt-0.5">Instant Win Multiplier</p></div>
+            </div>
+            <!-- Game Item 2 -->
+            <div onclick="launchMockGame('Pascal Wheel')" class="bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden shadow-xl active:scale-95 transition-all cursor-pointer group">
+                <div class="h-28 bg-gradient-to-br from-emerald-600 to-teal-900 flex items-center justify-center relative">
+                    <i class="fa-solid fa-circle-dot text-4xl text-white group-hover:scale-110 transition-transform"></i>
+                    <span class="absolute bottom-2 left-2 text-[8px] bg-black/60 px-1.5 py-0.5 rounded text-emerald-300 font-bold tracking-widest uppercase">Pascal Games</span>
+                </div>
+                <div class="p-3 bg-gray-900"><h4 class="text-xs font-black text-white">Pascal Wheel</h4><p class="text-[9px] text-gray-500 mt-0.5">Spin the Premium Wheel</p></div>
+            </div>
+        </div>
+
+        <!-- The Third-Party Game Frame Wrapper UI Container -->
+        <div id="gameIframeContainer" class="hidden space-y-3">
+            <div class="flex justify-between items-center bg-gray-900 px-3 py-2 rounded-xl border border-gray-800">
+                <span id="activeGameTitle" class="text-xs font-black text-yellow-500">Loading Game Engine...</span>
+                <button onclick="closeGameIframe()" class="text-xs bg-red-950 text-red-400 font-bold px-2.5 py-1 rounded-lg border border-red-900/30">Exit Game</button>
+            </div>
+            <!-- Interactive Embedded Game Console Simulator Panel -->
+            <div class="w-full bg-gray-950 border border-gray-800 rounded-2xl p-6 text-center space-y-4 shadow-inner relative overflow-hidden">
+                <div id="providerOverlay" class="absolute inset-0 bg-gray-950 flex flex-col items-center justify-center z-10 transition-opacity duration-700">
+                    <span class="text-blue-500 font-black text-sm tracking-widest uppercase animate-pulse">Pascal Games</span>
+                    <p class="text-[10px] text-gray-500 mt-1 font-mono">Securing Wallet Handshake...</p>
+                </div>
+                <div class="py-4">
+                    <div id="gameResultBox" class="text-2xl font-black text-gray-400">🎲 Click Spin to Draw</div>
+                    <p class="text-[10px] text-gray-500 mt-1">Provider Server: Provably Fair RNG Secured</p>
+                </div>
+                <div class="flex gap-2 justify-center">
+                    <button onclick="playMockGameRound(10)" class="bg-blue-600 hover:bg-blue-500 font-black text-white px-4 py-2 rounded-xl text-xs uppercase tracking-wider">Bet 10 ETB</button>
+                    <button onclick="playMockGameRound(50)" class="bg-blue-700 hover:bg-blue-600 font-black text-white px-4 py-2 rounded-xl text-xs uppercase tracking-wider">Bet 50 ETB</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Slip & History Panels -->
     <div id="sportsFooterBtn" class="fixed bottom-4 left-4 right-4 max-w-md mx-auto flex justify-between items-center z-40 pointer-events-none">
-        <button onclick="toggleHistoryPanel(true)" class="pointer-events-auto bg-gray-900 border border-gray-800 px-4 py-2.5 rounded-xl shadow-2xl flex items-center gap-2 text-xs font-bold active:scale-95 transition-all">
-            <i class="fa-solid fa-receipt text-yellow-500"></i> My Bets
-        </button>
+        <button onclick="toggleHistoryPanel(true)" class="pointer-events-auto bg-gray-900 border border-gray-800 px-4 py-2.5 rounded-xl shadow-2xl flex items-center gap-2 text-xs font-bold"><i class="fa-solid fa-receipt text-yellow-500"></i> My Bets</button>
     </div>
 
     <div id="betSlip" class="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-gray-900 border-t border-gray-800 px-4 py-3 transform translate-y-full transition-transform duration-300 z-50 rounded-t-2xl shadow-2xl">
-        <div class="flex justify-between items-center mb-3">
-            <h3 class="font-bold text-sm">Bet Slip</h3>
-            <button onclick="clearSlip()" class="text-xs text-gray-500 hover:text-red-400">Clear</button>
-        </div>
-        <div class="bg-gray-800 p-3 rounded-xl mb-4 flex justify-between items-center">
-            <div>
-                <p class="text-xs font-bold text-gray-400" id="slipSelection">None</p>
-                <p class="text-[10px] text-gray-500 mt-0.5">Match Odds (1X2)</p>
-            </div>
-            <span class="font-black text-yellow-500 text-sm" id="slipOdds">0.00</span>
-        </div>
-        <div class="grid grid-cols-2 gap-3 mb-3 items-center">
-            <input type="number" id="stakeInput" value="50" oninput="calculateReturn()" class="bg-gray-950 border border-gray-700 rounded-xl p-2 text-sm font-bold text-white focus:outline-none focus:border-yellow-500">
-            <div class="text-right">
-                <p class="text-[10px] text-gray-500 uppercase">Est. Return</p>
-                <p class="text-base font-black text-emerald-400" id="estReturn">ETB 0.00</p>
-            </div>
-        </div>
-        <button onclick="submitBet()" class="w-full bg-yellow-500 text-gray-950 font-black py-3 rounded-xl uppercase tracking-wider text-sm">Place Bet</button>
+        <div class="flex justify-between items-center mb-3"><h3 class="font-bold text-sm">Bet Slip</h3><button onclick="clearSlip()" class="text-xs text-gray-500">Clear</button></div>
+        <div class="bg-gray-800 p-3 rounded-xl mb-4 flex justify-between items-center"><div><p class="text-xs font-bold text-gray-400" id="slipSelection">None</p></div><span class="font-black text-yellow-500 text-sm" id="slipOdds">0.00</span></div>
+        <div class="grid grid-cols-2 gap-3 mb-3 items-center"><input type="number" id="stakeInput" value="50" oninput="calculateReturn()" class="bg-gray-950 border border-gray-700 rounded-xl p-2 text-sm font-bold text-white"><p class="text-base font-black text-emerald-400 text-right" id="estReturn">ETB 0.00</p></div>
+        <button onclick="submitBet()" class="w-full bg-yellow-500 text-gray-950 font-black py-3 rounded-xl uppercase text-sm">Place Bet</button>
     </div>
 
     <div id="historyPanel" class="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-gray-900 border-t border-gray-800 px-4 py-4 transform translate-y-full transition-transform duration-300 z-50 rounded-t-2xl max-h-[70vh] flex flex-col shadow-2xl">
-        <div class="flex justify-between items-center mb-4 flex-shrink-0">
-            <h3 class="font-bold text-sm text-gray-200">My Bets History</h3>
-            <button onclick="toggleHistoryPanel(false)" class="text-gray-400 bg-gray-800 h-7 w-7 rounded-full flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>
-        </div>
+        <div class="flex justify-between items-center mb-4 flex-shrink-0"><h3 class="font-bold text-sm text-gray-200">My Bets History</h3><button onclick="toggleHistoryPanel(false)" class="text-gray-400 bg-gray-800 h-7 w-7 rounded-full flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button></div>
         <div id="historyFeed" class="space-y-3 overflow-y-auto pb-4 flex-1"></div>
     </div>
 
-    <div id="authModal" class="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50 hidden backdrop-blur-xs">
-        <div class="bg-gray-900 border border-gray-800 w-full max-w-sm rounded-2xl p-6 relative">
-            <button onclick="closeAuthModal()" class="absolute top-4 right-4 text-gray-500 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
-            <h3 class="text-lg font-black text-white mb-1"><i class="fa-solid fa-user-shield text-yellow-500 mr-2"></i> Access Account</h3>
-            <p class="text-xs text-gray-500 mb-4">Enter a username to instantly register or log in.</p>
-            <div class="space-y-3 mb-4">
-                <input type="text" id="usernameInput" placeholder="e.g., alex45" class="w-full bg-gray-950 border border-gray-700 rounded-xl p-2.5 text-sm font-bold text-white focus:outline-none focus:border-yellow-500">
-            </div>
-            <button onclick="handleAuthSubmit()" class="w-full bg-yellow-500 text-gray-950 font-black py-2.5 rounded-xl text-sm uppercase tracking-wider">Connect Account</button>
-        </div>
-    </div>
+    <!-- AUTH MODAL -->
+    <div id="authModal" class="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50 hidden"><div class="bg-gray-900 border border-gray-800 w-full max-w-sm rounded-2xl p-6 relative"><h3 class="text-lg font-black text-white mb-4">Connect Account</h3><input type="text" id="usernameInput" placeholder="Username" class="w-full bg-gray-950 border border-gray-700 rounded-xl p-2.5 text-sm font-bold text-white mb-4"><button onclick="handleAuthSubmit()" class="w-full bg-yellow-500 text-gray-950 font-black py-2.5 rounded-xl text-sm uppercase">Connect</button></div></div>
 
     <script>
         let currentSelection = null;
@@ -120,29 +136,94 @@
 
         let aviatorBetPlaced = false;
         let aviatorActiveStake = 0;
-        let localMultiplier = 1.00;
 
         function switchTab(target) {
             currentActiveTab = target;
-            const sportsBtn = document.getElementById('tab-sports');
-            const aviatorBtn = document.getElementById('tab-aviator');
+            ['sports', 'aviator', 'games'].forEach(t => {
+                document.getElementById(`${t}View`).classList.add('hidden');
+                document.getElementById(`tab-${t}`).className = "flex-1 py-2 text-[11px] font-black uppercase text-center rounded-lg text-gray-400 hover:text-white transition-all";
+            });
+            
+            document.getElementById(`${target}View`).classList.remove('hidden');
+            const activeBtn = document.getElementById(`tab-${target}`);
             
             if (target === 'sports') {
-                document.getElementById('sportsView').classList.remove('hidden');
+                activeBtn.className = "flex-1 py-2 text-[11px] font-black uppercase text-center rounded-lg bg-yellow-500 text-gray-950 transition-all";
                 document.getElementById('sportsFooterBtn').classList.remove('hidden');
-                document.getElementById('aviatorView').classList.add('hidden');
-                
-                sportsBtn.className = "flex-1 py-2.5 text-xs font-black uppercase text-center rounded-lg bg-yellow-500 text-gray-950 transition-all";
-                aviatorBtn.className = "flex-1 py-2.5 text-xs font-black uppercase text-center rounded-lg text-gray-400 hover:text-white transition-all";
-            } else {
-                document.getElementById('sportsView').classList.add('hidden');
+            } else if (target === 'aviator') {
+                activeBtn.className = "flex-1 py-2 text-[11px] font-black uppercase text-center rounded-lg bg-red-600 text-white transition-all";
                 document.getElementById('sportsFooterBtn').classList.add('hidden');
-                document.getElementById('aviatorView').classList.remove('hidden');
                 clearSlip();
-
-                aviatorBtn.className = "flex-1 py-2.5 text-xs font-black uppercase text-center rounded-lg bg-red-600 text-white transition-all shadow-lg shadow-red-950/20";
-                sportsBtn.className = "flex-1 py-2.5 text-xs font-black uppercase text-center rounded-lg text-gray-400 hover:text-white transition-all";
+            } else if (target === 'games') {
+                activeBtn.className = "flex-1 py-2 text-[11px] font-black uppercase text-center rounded-lg bg-blue-600 text-white transition-all";
+                document.getElementById('sportsFooterBtn').classList.add('hidden');
+                clearSlip();
+                closeGameIframe();
             }
+        }
+
+        // --- MOCK THIRD-PARTY LAUNCH ENGINE ---
+        function launchMockGame(title) {
+            if (!currentUser) return openAuthModal();
+            document.getElementById('gamesCatalog').classList.add('hidden');
+            const container = document.getElementById('gameIframeContainer');
+            container.classList.remove('hidden');
+            
+            const overlay = document.getElementById('providerOverlay');
+            overlay.style.opacity = '1';
+            overlay.classList.remove('hidden');
+            document.getElementById('activeGameTitle').innerText = title;
+            document.getElementById('gameResultBox').innerText = "🎰 Initializing Engine...";
+
+            setTimeout(() => {
+                overlay.style.opacity = '0';
+                setTimeout(() => overlay.classList.add('hidden'), 700);
+                document.getElementById('gameResultBox').innerText = "🎲 Place Bet to Spin";
+            }, 1800);
+        }
+
+        function closeGameIframe() {
+            document.getElementById('gameIframeContainer').classList.add('hidden');
+            document.getElementById('gamesCatalog').classList.remove('hidden');
+        }
+
+        async function playMockGameRound(betAmount) {
+            if (!currentUser) return;
+            
+            // 1. Send Bet command to callback server
+            let r1 = await fetch(`${API_URL}/api/mock-provider/action`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username: currentUser, action: 'bet', amount: betAmount })
+            });
+            let res1 = await r1.json();
+            if (!res1.success) return alert(res1.msg || "Error");
+            
+            document.getElementById('walletBalance').innerText = `ETB ${res1.balance.toFixed(2)}`;
+            const resultBox = document.getElementById('gameResultBox');
+            resultBox.innerText = "⚡ SPINNING...";
+
+            // 2. Simulate RNG outcome
+            setTimeout(async () => {
+                let win = Math.random() > 0.55; 
+                if (win) {
+                    let multiplier = parseFloat((1.2 + Math.random() * 2).toFixed(2));
+                    let winAmount = betAmount * multiplier;
+                    
+                    // Trigger payout webhook logic
+                    let r2 = await fetch(`${API_URL}/api/mock-provider/action`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ username: currentUser, action: 'win', amount: winAmount })
+                    });
+                    let res2 = await r2.json();
+                    
+                    resultBox.innerHTML = `<span class="text-emerald-400">🎉 WON ${multiplier}x! (+ETB ${winAmount.toFixed(2)})</span>`;
+                    document.getElementById('walletBalance').innerText = `ETB ${res2.balance.toFixed(2)}`;
+                } else {
+                    resultBox.innerHTML = `<span class="text-red-400">❌ LOST (0.00x)</span>`;
+                }
+            }, 1000);
         }
 
         function checkUserSession() {
@@ -207,14 +288,12 @@
                 const plane = document.getElementById('planeObject');
                 const btn = document.getElementById('aviatorActionBtn');
                 
-                localMultiplier = s.multiplier;
                 const key = currentUser ? currentUser.toLowerCase().trim() : "";
 
                 document.getElementById('aviatorHistory').innerHTML = s.history.map(h => `
                     <span class="px-2 py-0.5 rounded-md font-bold ${h >= 2 ? 'bg-purple-950 text-purple-400 border border-purple-800/30' : 'bg-gray-800 text-blue-400'}">${h.toFixed(2)}x</span>
                 `).join('');
 
-                // 1. WAITING COUNTDOWN PHASE
                 if (s.status === "WAITING") {
                     display.innerText = `Next flight in ${s.timer}s`;
                     display.className = "text-2xl font-black text-yellow-500";
@@ -231,9 +310,7 @@
                         btn.innerText = "Place Bet";
                         btn.className = "w-full bg-emerald-500 text-white font-black py-2.5 rounded-xl text-sm uppercase tracking-wider transition-all";
                     }
-                } 
-                // 2. ACTIVE AIRBORNE FLIGHT PHASE
-                else if (s.status === "FLYING") {
+                } else if (s.status === "FLYING") {
                     display.innerText = `${s.multiplier.toFixed(2)}x`;
                     display.className = "text-5xl font-black text-red-500 animate-pulse";
                     msg.innerText = "Plane is rising...";
@@ -243,13 +320,10 @@
                     plane.style.transform = `translate(${distance}px, -${distance/1.5}px) scale(1)`;
 
                     if (s.activeBets[key]) {
-                        // User has an active bet running in this flight
                         aviatorBetPlaced = true; 
-                        aviatorActiveStake = s.activeBets[key];
-                        btn.innerText = `Cash Out (ETB ${(aviatorActiveStake * s.multiplier).toFixed(2)})`;
+                        btn.innerText = `Cash Out (ETB ${(s.activeBets[key] * s.multiplier).toFixed(2)})`;
                         btn.className = "w-full bg-orange-500 text-gray-950 font-black py-2.5 rounded-xl text-sm uppercase tracking-wider transition-all scale-100 animate-bounce";
                     } else if (s.nextRoundBets[key]) {
-                        // Bet is queued up in line for the next game round
                         aviatorBetPlaced = false;
                         btn.innerText = "Queued for Next Flight";
                         btn.className = "w-full bg-gray-800 text-yellow-500 font-bold py-2.5 rounded-xl text-xs uppercase cursor-not-allowed border border-yellow-500/20";
@@ -258,14 +332,11 @@
                         btn.innerText = "Place Bet (For Next Flight)";
                         btn.className = "w-full bg-blue-600 text-white font-black py-2.5 rounded-xl text-xs uppercase tracking-wider transition-all";
                     }
-                } 
-                // 3. CRASH EVENT
-                else if (s.status === "CRASHED") {
+                } else if (s.status === "CRASHED") {
                     display.innerText = "FLEW AWAY!";
                     display.className = "text-3xl font-black text-gray-600";
                     msg.innerText = `Crashed @ ${s.history[0]}x`;
                     plane.style.opacity = "0";
-
                     if (aviatorBetPlaced && !s.nextRoundBets[key]) {
                         aviatorBetPlaced = false; 
                         btn.innerText = "Place Bet";
@@ -277,65 +348,23 @@
 
         async function handleAviatorAction() {
             if (!currentUser) return openAuthModal();
-            const btn = document.getElementById('aviatorActionBtn');
             const stakeInput = document.getElementById('aviatorStake');
 
             if (!aviatorBetPlaced) {
                 const amount = parseFloat(stakeInput.value);
-                if (amount <= 0 || isNaN(amount)) return alert("Invalid stake amount");
-
+                if (amount <= 0 || isNaN(amount)) return alert("Invalid stake");
                 try {
-                    const r = await fetch(`${API_URL}/api/aviator/bet`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ username: currentUser, stake: amount })
-                    });
+                    const r = await fetch(`${API_URL}/api/aviator/bet`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: currentUser, stake: amount }) });
                     const res = await r.json();
-                    if (res.success) { 
-                        aviatorBetPlaced = true;
-                        loadUserProfile(); 
-                    } else { alert(res.message || "Execution Error"); }
-                } catch (e) { alert("Bet transmission failed"); }
+                    if (res.success) { aviatorBetPlaced = true; loadUserProfile(); }
+                } catch (e) { alert("Failed"); }
             } else {
                 try {
-                    const r = await fetch(`${API_URL}/api/aviator/cashout`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ username: currentUser })
-                    });
+                    const r = await fetch(`${API_URL}/api/aviator/cashout`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: currentUser }) });
                     const res = await r.json();
-                    if (res.success) {
-                        alert(`🎉 Cash Out Successful! Received ETB ${res.winAmount}`);
-                        aviatorBetPlaced = false;
-                        loadUserProfile();
-                    } else { alert(res.message || "Cash out rejection."); }
-                } catch (e) { alert("Cash out error"); }
+                    if (res.success) { alert(`🎉 Cash Out Successful! Received ETB ${res.winAmount}`); aviatorBetPlaced = false; loadUserProfile(); }
+                } catch (e) { alert("Error"); }
             }
-        }
-
-        async function loadBetHistory() {
-            if (!currentUser) return;
-            try {
-                const r = await fetch(`${API_URL}/api/bets/history?username=${currentUser}`);
-                const bets = await r.json();
-                const feed = document.getElementById('historyFeed');
-                if (bets.length === 0) {
-                    feed.innerHTML = `<div class="text-center py-8 text-gray-500 text-xs font-semibold">No active tickets found.</div>`;
-                    return;
-                }
-                feed.innerHTML = bets.reverse().map(b => {
-                    const color = b.status === 'WON' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : 
-                                  b.status === 'LOST' ? 'bg-red-500/20 text-red-400 border-red-500/30' : 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20';
-                    return `
-                    <div class="bg-gray-950 border border-gray-800 rounded-xl p-3 shadow-inner">
-                        <div class="flex justify-between mb-2 items-center"><span class="text-[9px] text-gray-500 font-mono">${b.id}</span><span class="text-[9px] font-black px-2 py-0.5 border rounded-full ${color}">${b.status}</span></div>
-                        <div class="flex justify-between items-end">
-                            <div><h4 class="text-xs font-black text-gray-200">${b.selection}</h4><p class="text-[10px] text-gray-500 font-medium mt-0.5">ETB ${b.stake.toFixed(2)} @ ${b.odds.toFixed(2)}</p></div>
-                            <div class="text-right"><p class="text-[9px] text-gray-500 font-semibold uppercase">Payout</p><p class="text-xs font-black text-emerald-400">ETB ${b.estReturn.toFixed(2)}</p></div>
-                        </div>
-                    </div>`;
-                }).join('');
-            } catch (err) { console.error(err); }
         }
 
         function toggleSelection(btn, pick, odds) {
@@ -347,7 +376,6 @@
                 document.getElementById('slipSelection').innerText = `Selection: ${pick}`;
                 document.getElementById('slipOdds').innerText = odds;
                 document.getElementById('betSlip').classList.remove('translate-y-full');
-                toggleHistoryPanel(false);
                 calculateReturn();
             }
         }
@@ -358,17 +386,7 @@
             document.getElementById('estReturn').innerText = `ETB ${(stake * odds).toFixed(2)}`;
         }
 
-        function clearSlip() {
-            currentSelection = null;
-            document.querySelectorAll('#matchContainer button').forEach(b => b.classList.remove('border-yellow-500', 'bg-yellow-500/10'));
-            document.getElementById('betSlip').classList.add('translate-y-full');
-        }
-
-        function toggleHistoryPanel(open) {
-            const panel = document.getElementById('historyPanel');
-            if (open) { clearSlip(); loadBetHistory(); panel.classList.remove('translate-y-full'); } else { panel.classList.add('translate-y-full'); }
-        }
-
+        function clearSlip() { currentSelection = null; document.querySelectorAll('#matchContainer button').forEach(b => b.classList.remove('border-yellow-500', 'bg-yellow-500/10')); document.getElementById('betSlip').classList.add('translate-y-full'); }
         function openAuthModal() { document.getElementById('authModal').classList.remove('hidden'); }
         function closeAuthModal() { document.getElementById('authModal').classList.add('hidden'); }
         function logoutUser() { if(confirm("Sign Out?")) { localStorage.removeItem('bet_username'); currentUser = null; checkUserSession(); location.reload(); } }
@@ -380,20 +398,7 @@
                 const r = await fetch(`${API_URL}/api/auth/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: input }) });
                 const res = await r.json();
                 if (res.success) { localStorage.setItem('bet_username', input); currentUser = input; closeAuthModal(); checkUserSession(); loadUserProfile(); }
-            } catch(e) { alert("Error connecting"); }
-        }
-
-        async function submitBet() {
-            if (!currentSelection || !currentUser) return;
-            try {
-                const res = await fetch(`${API_URL}/api/bets/place`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username: currentUser, selection: currentSelection, odds: document.getElementById('slipOdds').innerText, stake: document.getElementById('stakeInput').value })
-                });
-                const data = await res.json();
-                if (data.success) { alert("🎉 Bet Placed!"); loadUserProfile(); clearSlip(); }
-            } catch (err) { alert("Error"); }
+            } catch(e) { alert("Error"); }
         }
 
         window.onload = () => { 
