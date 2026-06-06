@@ -28,32 +28,29 @@ function saveDatabase() {
 // --- ULTIMATE AVIATOR ENGINE STATE ---
 let aviator = {
     multiplier: 1.00,
-    status: "WAITING", // WAITING, FLYING, CRASHED
+    status: "WAITING", 
     crashPoint: 0,
     history: [1.45, 3.02, 1.10, 5.50, 1.88],
     timer: 5,
-    activeBets: {},    // Bets playing in the CURRENT flight
-    nextRoundBets: {}  // Bets waiting for the NEXT flight
+    activeBets: {},    
+    nextRoundBets: {}  
 };
 
 function startAviatorRound() {
-    // Move all queued next-round bets into active flight status
     Object.keys(aviator.nextRoundBets).forEach(key => {
         aviator.activeBets[key] = aviator.nextRoundBets[key];
     });
-    aviator.nextRoundBets = {}; // Reset next-round queue
+    aviator.nextRoundBets = {}; 
 
     aviator.status = "FLYING";
     aviator.multiplier = 1.00;
     
-    // Generate random crash point
     let rand = Math.random();
     if (rand < 0.10) {
         aviator.crashPoint = 1.00; 
     } else {
         aviator.crashPoint = parseFloat((1 + Math.random() * 8).toFixed(2)); 
     }
-    console.log(`🛫 FLIGHT STARTED: Target Crash Point is ${aviator.crashPoint}x`);
 
     let flightInterval = setInterval(() => {
         if (aviator.status !== "FLYING") {
@@ -66,11 +63,7 @@ function startAviatorRound() {
             aviator.status = "CRASHED";
             aviator.history.unshift(parseFloat(aviator.multiplier.toFixed(2)));
             if(aviator.history.length > 8) aviator.history.pop();
-            
-            // Clear out anyone who didn't cash out (they lost)
             aviator.activeBets = {};
-
-            // Start 5-second betting countdown window
             aviator.timer = 5;
             aviator.status = "WAITING";
             
@@ -87,11 +80,8 @@ function startAviatorRound() {
         }
     }, 100);
 }
-
-// Start casino loop instantly on boot
 startAviatorRound();
 
-// --- MATCH DATA FIXTURES ---
 let liveMatches = [
     { id: "m1", league: "Premier League", homeTeam: "Liverpool", awayTeam: "Chelsea", homeScore: 0, awayScore: 0, minute: 15, time: "15' Live", status: "LIVE", odds: { home: "1.85", draw: "3.20", away: "4.50" } },
     { id: "m2", league: "La Liga", homeTeam: "Real Madrid", awayTeam: "Barcelona", homeScore: 1, awayScore: 1, minute: 42, time: "42' Live", status: "LIVE", odds: { home: "2.10", draw: "3.50", away: "3.10" } }
@@ -100,9 +90,7 @@ let liveMatches = [
 loadDatabase();
 
 // --- API ENDPOINTS ---
-app.get('/api/aviator/state', (req, res) => {
-    res.json(aviator);
-});
+app.get('/api/aviator/state', (req, res) => { res.json(aviator); });
 
 app.post('/api/auth/login', (req, res) => {
     const { username } = req.body;
@@ -119,40 +107,47 @@ app.get('/api/user/profile', (req, res) => {
     res.json(db.users[key]?.wallet || { balance: 0, currency: "ETB" });
 });
 
+// --- MOCK INTEGRATED GAME CUSTOM BACKEND API ---
+app.post('/api/mock-provider/action', (req, res) => {
+    const { username, action, amount } = req.body;
+    const key = username.toLowerCase().trim();
+    if (!db.users[key]) return res.status(400).json({ success: false });
+
+    let numAmount = parseFloat(amount);
+    if (action === 'bet') {
+        if (db.users[key].wallet.balance < numAmount) return res.json({ success: false, msg: "Insufficient balance" });
+        db.users[key].wallet.balance -= numAmount;
+    } else if (action === 'win') {
+        db.users[key].wallet.balance += numAmount;
+    }
+    saveDatabase();
+    res.json({ success: true, balance: db.users[key].wallet.balance });
+});
+
 app.post('/api/aviator/bet', (req, res) => {
     const { username, stake } = req.body;
     const key = username.toLowerCase().trim();
     const amount = parseFloat(stake);
-
-    if (!db.users[key] || db.users[key].wallet.balance < amount) {
-        return res.status(400).json({ success: false, message: "Insufficient funds" });
-    }
+    if (!db.users[key] || db.users[key].wallet.balance < amount) return res.status(400).json({ success: false });
 
     db.users[key].wallet.balance -= amount;
     saveDatabase();
-
     if (aviator.status === "FLYING") {
         aviator.nextRoundBets[key] = amount;
-        return res.json({ success: true, target: "NEXT" });
     } else {
         aviator.activeBets[key] = amount;
-        return res.json({ success: true, target: "CURRENT" });
     }
+    res.json({ success: true });
 });
 
 app.post('/api/aviator/cashout', (req, res) => {
     const { username } = req.body;
     const key = username.toLowerCase().trim();
+    if (aviator.status !== "FLYING" || !aviator.activeBets[key]) return res.status(400).json({ success: false });
 
-    if (aviator.status !== "FLYING") return res.status(400).json({ success: false, message: "Plane not flying" });
-    if (!aviator.activeBets[key]) return res.status(400).json({ success: false, message: "No active bet" });
-
-    const originalStake = aviator.activeBets[key];
-    const winnings = originalStake * aviator.multiplier;
-
+    const winnings = aviator.activeBets[key] * aviator.multiplier;
     db.users[key].wallet.balance += winnings;
-    delete aviator.activeBets[key]; // Remove bet so they can't cashout again
-    
+    delete aviator.activeBets[key];
     saveDatabase();
     res.json({ success: true, winAmount: winnings.toFixed(2) });
 });
