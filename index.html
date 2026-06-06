@@ -3,22 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dynamic Sports Platform</title>
+    <title>AddisBet Clone</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body class="bg-gray-950 text-gray-100 min-h-screen pb-24 font-sans selection:bg-yellow-400 selection:text-black">
+<body class="bg-gray-950 text-gray-100 min-h-screen pb-24 font-sans">
 
-    <header class="bg-gray-900 border-b border-gray-800 sticky top-0 z-40 px-4 py-3 flex justify-between items-center shadow-lg">
-        <div class="flex items-center gap-2">
-            <span class="text-yellow-500 text-xl font-black tracking-wider uppercase">Addis<span class="text-white bg-yellow-500 px-1 rounded-sm ml-1 text-gray-950">Bet</span></span>
-        </div>
+    <header class="bg-gray-900 border-b border-gray-800 sticky top-0 z-40 px-4 py-3 flex justify-between items-center">
+        <span class="text-yellow-500 text-xl font-black uppercase">Addis<span class="text-white bg-yellow-500 px-1 rounded-sm ml-1 text-gray-950">Bet</span></span>
         <div class="flex items-center gap-3">
             <div class="bg-gray-800 px-3 py-1.5 rounded-lg border border-gray-700 flex items-center gap-1.5">
                 <i class="fa-solid fa-wallet text-yellow-500 text-xs"></i>
-                <span id="walletBalance" class="text-sm font-bold tracking-wide text-gray-200">ETB 0.00</span>
+                <span id="walletBalance" class="text-sm font-bold">ETB 0.00</span>
             </div>
-            <button class="bg-yellow-500 hover:bg-yellow-400 text-gray-950 font-bold px-4 py-1.5 rounded-lg text-sm transition-all duration-200 shadow-md">Join</button>
+            <button class="bg-yellow-500 text-gray-950 font-bold px-4 py-1.5 rounded-lg text-sm">Join</button>
         </div>
     </header>
 
@@ -28,178 +26,142 @@
         </div>
     </main>
 
-    <div class="fixed bottom-4 left-4 right-4 max-w-md mx-auto flex justify-between items-center pointer-events-none z-40">
-        <button onclick="toggleHistoryPanel(true)" class="pointer-events-auto bg-gray-900 hover:bg-gray-850 text-gray-300 border border-gray-800 px-4 py-2.5 rounded-xl shadow-2xl flex items-center gap-2 text-xs font-bold active:scale-95 transition-all">
+    <div class="fixed bottom-4 left-4 right-4 max-w-md mx-auto flex justify-between items-center z-40 pointer-events-none">
+        <button onclick="toggleHistoryPanel(true)" class="pointer-events-auto bg-gray-900 border border-gray-800 px-4 py-2.5 rounded-xl shadow-2xl flex items-center gap-2 text-xs font-bold active:scale-95 transition-all">
             <i class="fa-solid fa-receipt text-yellow-500"></i> My Bets
         </button>
     </div>
 
-    <div id="betSlip" class="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-gray-900 border-t border-gray-800 px-4 py-3 transform translate-y-full transition-transform duration-350 ease-out z-50 rounded-t-2xl shadow-2xl">
+    <div id="betSlip" class="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-gray-900 border-t border-gray-800 px-4 py-3 transform translate-y-full transition-transform duration-300 z-50 rounded-t-2xl shadow-2xl">
         <div class="flex justify-between items-center mb-3">
-            <div class="flex items-center gap-2">
-                <span class="bg-yellow-500 text-gray-950 text-xs font-black px-1.5 py-0.5 rounded-full" id="slipCount">1</span>
-                <h3 class="font-bold text-sm tracking-wide text-gray-200">Bet Slip</h3>
-            </div>
-            <button onclick="clearSlip()" class="text-xs text-gray-500 hover:text-red-400 transition-colors"><i class="fa-solid fa-trash-can mr-1"></i> Clear</button>
+            <h3 class="font-bold text-sm">Bet Slip</h3>
+            <button onclick="clearSlip()" class="text-xs text-gray-500 hover:text-red-400">Clear</button>
         </div>
-        
-        <div class="bg-gray-800/50 border border-gray-700/40 rounded-xl p-3 mb-4 flex justify-between items-center">
+        <div class="bg-gray-800 p-3 rounded-xl mb-4 flex justify-between items-center">
             <div>
-                <p class="text-xs font-bold text-gray-400" id="slipSelection">Selection: None</p>
+                <p class="text-xs font-bold text-gray-400" id="slipSelection">None</p>
                 <p class="text-[10px] text-gray-500 mt-0.5">Match Odds (1X2)</p>
             </div>
             <span class="font-black text-yellow-500 text-sm" id="slipOdds">0.00</span>
         </div>
-
-        <div class="grid grid-cols-2 gap-3 items-center mb-3">
-            <div class="relative">
-                <span class="absolute left-3 top-2.5 text-xs font-bold text-gray-500">ETB</span>
-                <input type="number" id="stakeInput" value="50" oninput="calculateReturn()" class="w-full bg-gray-950 border border-gray-700 rounded-xl py-2 pl-10 pr-3 text-sm font-bold text-white focus:outline-none focus:border-yellow-500 transition-colors">
-            </div>
+        <div class="grid grid-cols-2 gap-3 mb-3 items-center">
+            <input type="number" id="stakeInput" value="50" oninput="calculateReturn()" class="bg-gray-950 border border-gray-700 rounded-xl p-2 text-sm font-bold text-white focus:outline-none focus:border-yellow-500">
             <div class="text-right">
-                <p class="text-[10px] font-semibold text-gray-500 uppercase tracking-wider">Est. Return</p>
+                <p class="text-[10px] text-gray-500 uppercase">Est. Return</p>
                 <p class="text-base font-black text-emerald-400" id="estReturn">ETB 0.00</p>
             </div>
         </div>
-
-        <button onclick="submitBet()" class="w-full bg-yellow-500 hover:bg-yellow-400 text-gray-950 font-black py-3 rounded-xl text-sm transition-all shadow-md tracking-wider uppercase">Place Bet</button>
+        <button onclick="submitBet()" class="w-full bg-yellow-500 text-gray-950 font-black py-3 rounded-xl uppercase tracking-wider text-sm">Place Bet</button>
     </div>
 
-    <div id="historyPanel" class="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-gray-900 border-t border-gray-800 px-4 py-4 transform translate-y-full transition-transform duration-350 ease-out z-50 rounded-t-2xl shadow-2xl max-h-[70vh] flex flex-col">
+    <div id="historyPanel" class="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-gray-900 border-t border-gray-800 px-4 py-4 transform translate-y-full transition-transform duration-300 z-50 rounded-t-2xl max-h-[70vh] flex flex-col shadow-2xl">
         <div class="flex justify-between items-center mb-4 flex-shrink-0">
-            <h3 class="font-bold text-sm tracking-wide text-gray-200"><i class="fa-solid fa-clock-history text-yellow-500 mr-1.5"></i> My Bets History</h3>
-            <button onclick="toggleHistoryPanel(false)" class="text-gray-400 hover:text-white text-sm bg-gray-800 h-7 w-7 rounded-full flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>
+            <h3 class="font-bold text-sm text-gray-200">My Bets History</h3>
+            <button onclick="toggleHistoryPanel(false)" class="text-gray-400 bg-gray-800 h-7 w-7 rounded-full flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>
         </div>
-        
-        <div id="historyFeed" class="space-y-3 overflow-y-auto pr-1 flex-1 pb-4">
-            </div>
+        <div id="historyFeed" class="space-y-3 overflow-y-auto pb-4 flex-1"></div>
     </div>
 
     <script>
         let currentSelection = null;
-        const API_URL = window.location.origin; 
+        const API_URL = window.location.origin;
 
         async function loadUserProfile() {
             try {
-                const response = await fetch(`${API_URL}/api/user/profile`);
-                const data = await response.json();
-                document.getElementById('walletBalance').innerText = `${data.currency} ${data.balance.toFixed(2)}`;
+                const r = await fetch(`${API_URL}/api/user/profile`);
+                const d = await r.json();
+                document.getElementById('walletBalance').innerText = `${d.currency} ${d.balance.toFixed(2)}`;
             } catch (err) {
-                console.error("Error updating user wallet:", err);
+                console.error("Wallet loading error:", err);
             }
         }
 
         async function displayMatches() {
             try {
-                const response = await fetch(`${API_URL}/api/matches`);
-                const matches = await response.json();
+                const r = await fetch(`${API_URL}/api/matches`);
+                const matches = await r.json();
                 const container = document.getElementById('matchContainer');
-                container.innerHTML = ''; 
-
-                matches.forEach(match => {
-                    container.innerHTML += `
-                        <div class="bg-gray-900 rounded-xl border border-gray-800 shadow-xl overflow-hidden">
-                            <div class="bg-gray-850 px-3 py-1.5 border-b border-gray-800/50 flex justify-between items-center text-xs text-gray-400 font-medium">
-                                <span class="flex items-center gap-1.5"><i class="fa-solid fa-trophy text-yellow-600"></i> ${match.league}</span>
-                                <span class="text-red-400 font-semibold bg-red-500/10 px-1.5 py-0.5 rounded-sm">${match.time}</span>
-                            </div>
-                            <div class="p-4 flex justify-between items-center gap-2">
-                                <div class="space-y-2 flex-1">
-                                    <div class="flex items-center justify-between">
-                                        <span class="font-bold text-gray-200 text-sm tracking-wide">${match.homeTeam}</span>
-                                        <span class="font-black text-yellow-500 text-base">${match.homeScore}</span>
-                                    </div>
-                                    <div class="flex items-center justify-between">
-                                        <span class="font-bold text-gray-200 text-sm tracking-wide">${match.awayTeam}</span>
-                                        <span class="font-black text-yellow-500 text-base">${match.awayScore}</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="px-3 pb-4 grid grid-cols-3 gap-2">
-                                <button onclick="toggleSelection(this, '${match.homeTeam}', '${match.odds.home}')" class="bg-gray-800 hover:bg-gray-700/80 border border-gray-700/60 rounded-xl p-2.5 flex flex-col items-center justify-center transition-all">
-                                    <span class="text-[10px] font-bold text-gray-500 mb-0.5">1</span>
-                                    <span class="font-black text-sm text-yellow-500">${match.odds.home}</span>
-                                </button>
-                                <button onclick="toggleSelection(this, 'Draw', '${match.odds.draw}')" class="bg-gray-800 hover:bg-gray-700/80 border border-gray-700/60 rounded-xl p-2.5 flex flex-col items-center justify-center transition-all">
-                                    <span class="text-[10px] font-bold text-gray-500 mb-0.5">X</span>
-                                    <span class="font-black text-sm text-yellow-500">${match.odds.draw}</span>
-                                </button>
-                                <button onclick="toggleSelection(this, '${match.awayTeam}', '${match.odds.away}')" class="bg-gray-800 hover:bg-gray-700/80 border border-gray-700/60 rounded-xl p-2.5 flex flex-col items-center justify-center transition-all">
-                                    <span class="text-[10px] font-bold text-gray-500 mb-0.5">2</span>
-                                    <span class="font-black text-sm text-yellow-500">${match.odds.away}</span>
-                                </button>
-                            </div>
+                
+                container.innerHTML = matches.map(m => `
+                    <div class="bg-gray-900 rounded-xl border border-gray-800 overflow-hidden shadow-xl">
+                        <div class="bg-gray-850 px-3 py-1.5 text-[10px] text-gray-400 flex justify-between border-b border-gray-800">
+                            <span>${m.league}</span><span class="text-red-400 font-bold">${m.time}</span>
                         </div>
-                    `;
-                });
+                        <div class="p-4 space-y-2">
+                            <div class="flex justify-between font-bold text-sm"><span>${m.homeTeam}</span><span>${m.homeScore}</span></div>
+                            <div class="flex justify-between font-bold text-sm"><span>${m.awayTeam}</span><span>${m.awayScore}</span></div>
+                        </div>
+                        <div class="px-3 pb-4 grid grid-cols-3 gap-2">
+                            <button onclick="toggleSelection(this, '${m.homeTeam}', '${m.odds.home}')" class="bg-gray-800 border border-transparent hover:bg-gray-700 rounded-lg p-2 flex flex-col items-center transition-all duration-150">
+                                <span class="text-[10px] text-gray-500 font-bold">1</span><span class="text-yellow-500 font-black text-sm">${m.odds.home}</span>
+                            </button>
+                            <button onclick="toggleSelection(this, 'Draw', '${m.odds.draw}')" class="bg-gray-800 border border-transparent hover:bg-gray-700 rounded-lg p-2 flex flex-col items-center transition-all duration-150">
+                                <span class="text-[10px] text-gray-500 font-bold">X</span><span class="text-yellow-500 font-black text-sm">${m.odds.draw}</span>
+                            </button>
+                            <button onclick="toggleSelection(this, '${m.awayTeam}', '${m.odds.away}')" class="bg-gray-800 border border-transparent hover:bg-gray-700 rounded-lg p-2 flex flex-col items-center transition-all duration-150">
+                                <span class="text-[10px] text-gray-500 font-bold">2</span><span class="text-yellow-500 font-black text-sm">${m.odds.away}</span>
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
             } catch (err) {
-                console.error("Error loading live matches:", err);
+                console.error("Match engine loading error:", err);
             }
         }
 
-        // Fetch and draw the bet logs from our new API route
         async function loadBetHistory() {
             try {
-                const response = await fetch(`${API_URL}/api/bets/history`);
-                const bets = await response.json();
+                const r = await fetch(`${API_URL}/api/bets/history`);
+                const bets = await r.json();
                 const feed = document.getElementById('historyFeed');
                 
                 if (bets.length === 0) {
-                    feed.innerHTML = `<div class="text-center py-8 text-gray-500 text-xs font-semibold">No tickets found yet. Place a bet to begin!</div>`;
+                    feed.innerHTML = `<div class="text-center py-8 text-gray-500 text-xs font-semibold">No active tickets found.</div>`;
                     return;
                 }
 
-                feed.innerHTML = '';
-                bets.reverse().forEach(bet => {
-                    feed.innerHTML += `
-                        <div class="bg-gray-950 border border-gray-800 rounded-xl p-3 flex flex-col justify-between shadow-inner">
-                            <div class="flex justify-between items-center mb-1.5">
-                                <span class="text-[10px] font-black text-gray-500 tracking-wider">${bet.id}</span>
-                                <span class="text-[9px] font-bold px-2 py-0.5 rounded-full bg-yellow-500/10 text-yellow-500 tracking-wide uppercase">${bet.status}</span>
+                feed.innerHTML = bets.reverse().map(b => {
+                    const color = b.status === 'WON' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : 
+                                  b.status === 'LOST' ? 'bg-red-500/20 text-red-400 border-red-500/30' : 
+                                  'bg-yellow-500/10 text-yellow-500 border-yellow-500/20';
+                    return `
+                    <div class="bg-gray-950 border border-gray-800 rounded-xl p-3 shadow-inner">
+                        <div class="flex justify-between mb-2 items-center">
+                            <span class="text-[9px] text-gray-500 font-mono">${b.id}</span>
+                            <span class="text-[9px] font-black px-2 py-0.5 border rounded-full ${color}">${b.status}</span>
+                        </div>
+                        <div class="flex justify-between items-end">
+                            <div>
+                                <h4 class="text-xs font-black text-gray-200">${b.selection}</h4>
+                                <p class="text-[10px] text-gray-500 font-medium mt-0.5">ETB ${b.stake.toFixed(2)} @ ${b.odds.toFixed(2)}</p>
                             </div>
-                            <div class="flex justify-between items-end">
-                                <div>
-                                    <h4 class="text-xs font-black text-gray-200">${bet.selection}</h4>
-                                    <p class="text-[10px] text-gray-500 font-semibold mt-0.5">Stake: <span class="text-gray-300">ETB ${bet.stake.toFixed(2)}</span> @ ${bet.odds.toFixed(2)}</p>
-                                </div>
-                                <div class="text-right">
-                                    <p class="text-[9px] font-bold text-gray-500 uppercase tracking-widest">Est. Payout</p>
-                                    <p class="text-xs font-black text-emerald-400">ETB ${bet.estReturn.toFixed(2)}</p>
-                                </div>
+                            <div class="text-right">
+                                <p class="text-[9px] text-gray-500 font-semibold uppercase">Payout</p>
+                                <p class="text-xs font-black text-emerald-400">ETB ${b.estReturn.toFixed(2)}</p>
                             </div>
                         </div>
-                    `;
-                });
+                    </div>`;
+                }).join('');
             } catch (err) {
-                console.error("Error updating voucher panel state:", err);
-            }
-        }
-
-        function toggleHistoryPanel(open) {
-            const panel = document.getElementById('historyPanel');
-            if (open) {
-                document.getElementById('betSlip').classList.add('translate-y-full'); // Auto-close active slips
-                loadBetHistory();
-                panel.classList.remove('translate-y-full');
-            } else {
-                panel.classList.add('translate-y-full');
+                console.error("Error loading history logs:", err);
             }
         }
 
         function toggleSelection(btn, pick, odds) {
+            // Remove highlighting borders from all buttons inside match cards
             document.querySelectorAll('#matchContainer button').forEach(b => b.classList.remove('border-yellow-500', 'bg-yellow-500/10'));
             
             if (currentSelection === pick) {
-                currentSelection = null;
-                document.getElementById('betSlip').classList.add('translate-y-full');
+                clearSlip();
             } else {
                 currentSelection = pick;
+                // Add yellow focus boundary selection rings to chosen card odd trigger
                 btn.classList.add('border-yellow-500', 'bg-yellow-500/10');
                 
                 document.getElementById('slipSelection').innerText = `Selection: ${pick}`;
                 document.getElementById('slipOdds').innerText = odds;
                 document.getElementById('betSlip').classList.remove('translate-y-full');
-                toggleHistoryPanel(false); // Close history panel if a user clicks an odd button
+                toggleHistoryPanel(false); // Close history drawer if active
                 calculateReturn();
             }
         }
@@ -216,35 +178,43 @@
             document.getElementById('betSlip').classList.add('translate-y-full');
         }
 
+        function toggleHistoryPanel(open) {
+            const panel = document.getElementById('historyPanel');
+            if (open) {
+                clearSlip(); // Collapse betslip modal before expanding history view
+                loadBetHistory();
+                panel.classList.remove('translate-y-full');
+            } else {
+                panel.classList.add('translate-y-full');
+            }
+        }
+
         async function submitBet() {
             if (!currentSelection) return;
             const odds = document.getElementById('slipOdds').innerText;
             const stake = document.getElementById('stakeInput').value;
 
             try {
-                const response = await fetch(`${API_URL}/api/bets/place`, {
+                const res = await fetch(`${API_URL}/api/bets/place`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ selection: currentSelection, odds: odds, stake: stake })
                 });
-                const result = await response.json();
-
-                if (result.success) {
-                    alert(`🎉 ${result.message}\nBet ID: ${result.betId}`);
-                    document.getElementById('walletBalance').innerText = `ETB ${result.newBalance.toFixed(2)}`;
+                const data = await res.json();
+                
+                if (data.success) {
+                    alert("🎉 Bet Placed Successfully!");
+                    loadUserProfile();
                     clearSlip();
                 } else {
-                    alert(`⚠️ Bet Rejected: ${result.message}`);
+                    alert(`⚠️ Placement Rejected: ${data.message}`);
                 }
             } catch (err) {
-                alert("Network communication issue.");
+                alert("Network communication error processing slip ticket.");
             }
         }
 
-        window.onload = () => {
-            loadUserProfile();
-            displayMatches();
-        };
+        window.onload = () => { loadUserProfile(); displayMatches(); };
     </script>
 </body>
 </html>
