@@ -8,16 +8,18 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
-// Serve static frontend UI assets instantly
+// Serve static frontend UI assets instantly from the root directory
 app.use(express.static(path.join(__dirname, '.')));
 
-// 1. DATA STORE: User state & live match arrays
+// =========================================================================
+// 1. DATABASE STATE (In-Memory Simulation)
+// =========================================================================
 let userWallet = {
     balance: 750.00, // Preloading test account state with 750 ETB
     currency: "ETB"
 };
 
-let placedBets = [];
+let placedBets = []; // Holds the dynamic receipt history array
 
 let liveMatches = [
     {
@@ -42,20 +44,30 @@ let liveMatches = [
     }
 ];
 
-// 2. ENDPOINT: Fetch live matches array
+// =========================================================================
+// 2. API ENDPOINTS / ROUTES
+// =========================================================================
+
+// Endpoint A: Fetch the live matches array
 app.get('/api/matches', (req, res) => {
     res.json(liveMatches);
 });
 
-// 3. ENDPOINT: Read wallet account states
+// Endpoint B: Read current wallet account state
 app.get('/api/user/profile', (req, res) => {
     res.json(userWallet);
 });
 
-// 4. ENDPOINT: Validate and process core transactional stakes
+// Endpoint C: Fetch all bets placed by the current user session
+app.get('/api/bets/history', (req, res) => {
+    res.json(placedBets);
+});
+
+// Endpoint D: Validate and process transactional bet placements
 app.post('/api/bets/place', (req, res) => {
     const { selection, odds, stake } = req.body;
 
+    // Strict validation blocks
     if (!selection || !odds || !stake) {
         return res.status(400).json({ success: false, message: "Invalid payload parameters processing slip." });
     }
@@ -69,21 +81,24 @@ app.post('/api/bets/place', (req, res) => {
         return res.status(400).json({ success: false, message: "Insufficient ETB balance inside your digital wallet." });
     }
 
-    // Execute balance deductions
+    // Deduct funds from user state wallet balance
     userWallet.balance -= numericStake;
 
+    // Build the dynamic transactional slip record object
     const transactionRecord = {
         id: 'TX_' + Math.random().toString(36).substr(2, 9).toUpperCase(),
         selection,
         odds: parseFloat(odds),
         stake: numericStake,
         estReturn: parseFloat((numericStake * odds).toFixed(2)),
-        status: 'OPEN',
+        status: 'OPEN', // Default state for dynamic tracking later
         timestamp: new Date()
     };
 
+    // Save ticket into backend log array arrays
     placedBets.push(transactionRecord);
 
+    // Return success to the phone layout
     res.json({
         success: true,
         message: "Bet voucher accepted and registered into backend database logs!",
@@ -92,12 +107,16 @@ app.post('/api/bets/place', (req, res) => {
     });
 });
 
-// Catch-all route to serve the web front file cleanly
+// =========================================================================
+// 3. SERVER INITIALIZATION & ROUTING CATCH-ALL
+// =========================================================================
+
+// Catch-all route to serve the primary web layout safely if pages reload
 app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// Start application server
+// Start up the application server engine execution pool
 app.listen(PORT, () => {
     console.log(`Live application engine mapping requests seamlessly on port ${PORT}`);
 });
