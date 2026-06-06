@@ -37,41 +37,52 @@ let aviator = {
 };
 
 function startAviatorRound() {
-    // 1. Move all waiting bets into the active flight game room
-    aviator.activeBets = { ...aviator.nextRoundBets };
-    aviator.nextRoundBets = {}; // Clear the waiting list
+    // Move all queued next-round bets into active flight status
+    Object.keys(aviator.nextRoundBets).forEach(key => {
+        aviator.activeBets[key] = aviator.nextRoundBets[key];
+    });
+    aviator.nextRoundBets = {}; // Reset next-round queue
 
     aviator.status = "FLYING";
     aviator.multiplier = 1.00;
     
-    // Fair casino house edge algorithm for crash point
+    // Generate random crash point
     let rand = Math.random();
     if (rand < 0.10) {
-        aviator.crashPoint = 1.00; // 10% chance of instant crash at 1.00x
+        aviator.crashPoint = 1.00; 
     } else {
-        aviator.crashPoint = (1 + Math.random() * 9).toFixed(2); 
+        aviator.crashPoint = parseFloat((1 + Math.random() * 8).toFixed(2)); 
     }
-    
+    console.log(`🛫 FLIGHT STARTED: Target Crash Point is ${aviator.crashPoint}x`);
+
     let flightInterval = setInterval(() => {
+        if (aviator.status !== "FLYING") {
+            clearInterval(flightInterval);
+            return;
+        }
+
         if (aviator.multiplier >= aviator.crashPoint) {
             clearInterval(flightInterval);
             aviator.status = "CRASHED";
             aviator.history.unshift(parseFloat(aviator.multiplier.toFixed(2)));
             if(aviator.history.length > 8) aviator.history.pop();
             
-            // Trigger 5-second betting window phase
+            // Clear out anyone who didn't cash out (they lost)
+            aviator.activeBets = {};
+
+            // Start 5-second betting countdown window
             aviator.timer = 5;
+            aviator.status = "WAITING";
+            
             let countdown = setInterval(() => {
                 aviator.timer -= 1;
-                aviator.status = "WAITING";
                 if (aviator.timer <= 0) {
                     clearInterval(countdown);
                     startAviatorRound();
                 }
             }, 1000);
         } else {
-            // Plane acceleration curves
-            let speed = aviator.multiplier < 2 ? 0.01 : aviator.multiplier < 5 ? 0.03 : 0.07;
+            let speed = aviator.multiplier < 2 ? 0.02 : aviator.multiplier < 5 ? 0.05 : 0.12;
             aviator.multiplier += speed;
         }
     }, 100);
@@ -105,10 +116,9 @@ app.post('/api/auth/login', (req, res) => {
 
 app.get('/api/user/profile', (req, res) => {
     const key = req.query.username?.toLowerCase().trim();
-    res.json(db.users[key]?.wallet || { balance: 0 });
+    res.json(db.users[key]?.wallet || { balance: 0, currency: "ETB" });
 });
 
-// AUTHENTIC CASINO BET PLACEMENT ENTRIES
 app.post('/api/aviator/bet', (req, res) => {
     const { username, stake } = req.body;
     const key = username.toLowerCase().trim();
@@ -118,46 +128,35 @@ app.post('/api/aviator/bet', (req, res) => {
         return res.status(400).json({ success: false, message: "Insufficient funds" });
     }
 
-    // Take the money from wallet immediately
     db.users[key].wallet.balance -= amount;
     saveDatabase();
 
-    // IF THE PLANE IS FLYING: Put bet in waiting line for next round
     if (aviator.status === "FLYING") {
         aviator.nextRoundBets[key] = amount;
-        return res.json({ success: true, target: "NEXT", message: "Bet placed for next round!" });
+        return res.json({ success: true, target: "NEXT" });
     } else {
-        // IF THE GAME IS WAITING: Put bet directly into this current upcoming round
         aviator.activeBets[key] = amount;
-        return res.json({ success: true, target: "CURRENT", message: "Bet locked in for this round!" });
+        return res.json({ success: true, target: "CURRENT" });
     }
 });
 
-// SECURE CASHOUT ROUTE Validation
 app.post('/api/aviator/cashout', (req, res) => {
     const { username } = req.body;
     const key = username.toLowerCase().trim();
 
-    if (aviator.status !== "FLYING") return res.status(400).json({ success: false, message: "Plane is not in flight." });
-    
-    // Check if this user actually has an active live bet locked inside this current flight
-    if (!aviator.activeBets[key]) {
-        return res.status(400).json({ success: false, message: "No active bet running in this flight." });
-    }
+    if (aviator.status !== "FLYING") return res.status(400).json({ success: false, message: "Plane not flying" });
+    if (!aviator.activeBets[key]) return res.status(400).json({ success: false, message: "No active bet" });
 
     const originalStake = aviator.activeBets[key];
-    const payoutMultiplier = aviator.multiplier;
-    const winnings = originalStake * payoutMultiplier;
+    const winnings = originalStake * aviator.multiplier;
 
-    // Credit user profile and remove bet from active list so they can't cash out twice!
     db.users[key].wallet.balance += winnings;
-    delete aviator.activeBets[key];
+    delete aviator.activeBets[key]; // Remove bet so they can't cashout again
     
     saveDatabase();
     res.json({ success: true, winAmount: winnings.toFixed(2) });
 });
 
-// REST OF TRACKING API CODE CONTRACTS
 app.post('/api/bets/place', (req, res) => {
     const { username, selection, odds, stake } = req.body;
     const key = username.toLowerCase().trim();
@@ -171,4 +170,4 @@ app.post('/api/bets/place', (req, res) => {
 app.get('/api/bets/history', (req, res) => { res.json(db.users[req.query.username?.toLowerCase().trim()]?.placedBets || []); });
 app.get('/api/matches', (req, res) => res.json(liveMatches));
 app.get('*', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
-app.listen(PORT, () => console.log(`Server operating on port ${PORT}`));
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
