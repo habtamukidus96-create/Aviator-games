@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AddisBet Clone</title>
+    <title>AddisBet Clone & Casino</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body class="bg-gray-950 text-gray-100 min-h-screen pb-24 font-sans">
+<body class="bg-gray-950 text-gray-100 min-h-screen pb-24 font-sans select-none">
 
     <header class="bg-gray-900 border-b border-gray-800 sticky top-0 z-40 px-4 py-3 flex justify-between items-center">
         <span class="text-yellow-500 text-xl font-black uppercase">Addis<span class="text-white bg-yellow-500 px-1 rounded-sm ml-1 text-gray-950">Bet</span></span>
@@ -20,13 +20,51 @@
         </div>
     </header>
 
-    <main id="matchContainer" class="p-3 max-w-md mx-auto space-y-4">
-        <div class="text-center py-10 text-gray-500 font-medium text-sm">
-            <i class="fa-solid fa-circle-notch animate-spin mr-2 text-yellow-500"></i> Loading live matches...
+    <div class="bg-gray-900/50 border-b border-gray-800 p-1 flex max-w-md mx-auto mt-2 rounded-xl sticky top-[57px] z-30 backdrop-blur-md">
+        <button onclick="switchTab('sports')" id="tab-sports" class="flex-1 py-2.5 text-xs font-black uppercase text-center rounded-lg bg-yellow-500 text-gray-950 transition-all">
+            <i class="fa-solid fa-futbol mr-1.5"></i> Sports Live
+        </button>
+        <button onclick="switchTab('aviator')" id="tab-aviator" class="flex-1 py-2.5 text-xs font-black uppercase text-center rounded-lg text-gray-400 hover:text-white transition-all">
+            <i class="fa-solid fa-plane-departure mr-1.5 text-red-500"></i> Aviator
+        </button>
+    </div>
+
+    <main id="sportsView" class="p-3 max-w-md mx-auto space-y-4">
+        <div id="matchContainer" class="space-y-4"></div>
+    </main>
+
+    <main id="aviatorView" class="p-3 max-w-md mx-auto space-y-4 hidden">
+        <div id="aviatorHistory" class="flex gap-1.5 overflow-x-auto py-1 px-0.5 text-[10px] font-mono scrollbar-none"></div>
+
+        <div class="bg-gray-900 border border-gray-800 aspect-video rounded-2xl relative overflow-hidden flex flex-col items-center justify-center shadow-2xl">
+            <div class="absolute inset-0 bg-[linear-gradient(to_right,#1f2937_1px,transparent_1px),linear-gradient(to_bottom,#1f2937_1px,transparent_1px)] bg-[size:24px_24px] opacity-20"></div>
+            
+            <div class="z-10 text-center">
+                <h1 id="aviatorDisplay" class="text-4xl font-black tracking-tight text-white">1.00x</h1>
+                <p id="aviatorMessage" class="text-[10px] uppercase font-bold tracking-widest text-gray-500 mt-1">Waiting for flight...</p>
+            </div>
+
+            <div id="planeObject" class="absolute bottom-6 left-6 text-red-500 text-3xl opacity-0 scale-70 transition-all duration-100 ease-out">
+                <i class="fa-solid fa-plane-up"></i>
+            </div>
+        </div>
+
+        <div class="bg-gray-900 border border-gray-800 rounded-2xl p-4 shadow-xl space-y-4">
+            <div class="grid grid-cols-2 gap-3 items-center">
+                <div>
+                    <label class="text-[10px] font-bold text-gray-500 uppercase tracking-wider block mb-1">Bet Amount (ETB)</label>
+                    <input type="number" id="aviatorStake" value="100" class="w-full bg-gray-950 border border-gray-700 rounded-xl p-2.5 text-sm font-bold focus:outline-none focus:border-red-500">
+                </div>
+                <div class="pt-5">
+                    <button id="aviatorActionBtn" onclick="handleAviatorAction()" class="w-full bg-emerald-500 text-white font-black py-2.5 rounded-xl text-sm uppercase tracking-wider transition-all active:scale-95 shadow-lg shadow-emerald-950/20">
+                        Place Bet
+                    </button>
+                </div>
+            </div>
         </div>
     </main>
 
-    <div class="fixed bottom-4 left-4 right-4 max-w-md mx-auto flex justify-between items-center z-40 pointer-events-none">
+    <div id="sportsFooterBtn" class="fixed bottom-4 left-4 right-4 max-w-md mx-auto flex justify-between items-center z-40 pointer-events-none">
         <button onclick="toggleHistoryPanel(true)" class="pointer-events-auto bg-gray-900 border border-gray-800 px-4 py-2.5 rounded-xl shadow-2xl flex items-center gap-2 text-xs font-bold active:scale-95 transition-all">
             <i class="fa-solid fa-receipt text-yellow-500"></i> My Bets
         </button>
@@ -67,12 +105,8 @@
             <button onclick="closeAuthModal()" class="absolute top-4 right-4 text-gray-500 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
             <h3 class="text-lg font-black text-white mb-1"><i class="fa-solid fa-user-shield text-yellow-500 mr-2"></i> Access Account</h3>
             <p class="text-xs text-gray-500 mb-4">Enter a username to instantly register or log in.</p>
-            
             <div class="space-y-3 mb-4">
-                <div>
-                    <label class="text-[10px] font-bold text-gray-400 uppercase block mb-1">Username</label>
-                    <input type="text" id="usernameInput" placeholder="e.g., alex45" class="w-full bg-gray-950 border border-gray-700 rounded-xl p-2.5 text-sm font-bold text-white focus:outline-none focus:border-yellow-500">
-                </div>
+                <input type="text" id="usernameInput" placeholder="e.g., alex45" class="w-full bg-gray-950 border border-gray-700 rounded-xl p-2.5 text-sm font-bold text-white focus:outline-none focus:border-yellow-500">
             </div>
             <button onclick="handleAuthSubmit()" class="w-full bg-yellow-500 text-gray-950 font-black py-2.5 rounded-xl text-sm uppercase tracking-wider">Connect Account</button>
         </div>
@@ -80,20 +114,47 @@
 
     <script>
         let currentSelection = null;
-        let currentUser = localStorage.getItem('bet_username') || null; // Sticky client-side authentication storage
+        let currentUser = localStorage.getItem('bet_username') || null;
+        let currentActiveTab = "sports";
         const API_URL = window.location.origin;
 
-        // Check login state immediately on startup
+        // Aviator Game Tracking State
+        let aviatorBetPlaced = false;
+        let aviatorActiveStake = 0;
+        let localMultiplier = 1.00;
+
+        function switchTab(target) {
+            currentActiveTab = target;
+            const sportsBtn = document.getElementById('tab-sports');
+            const aviatorBtn = document.getElementById('tab-aviator');
+            
+            if (target === 'sports') {
+                document.getElementById('sportsView').classList.remove('hidden');
+                document.getElementById('sportsFooterBtn').classList.remove('hidden');
+                document.getElementById('aviatorView').classList.add('hidden');
+                
+                sportsBtn.className = "flex-1 py-2.5 text-xs font-black uppercase text-center rounded-lg bg-yellow-500 text-gray-950 transition-all";
+                aviatorBtn.className = "flex-1 py-2.5 text-xs font-black uppercase text-center rounded-lg text-gray-400 hover:text-white transition-all";
+            } else {
+                document.getElementById('sportsView').classList.add('hidden');
+                document.getElementById('sportsFooterBtn').classList.add('hidden');
+                document.getElementById('aviatorView').classList.remove('hidden');
+                clearSlip();
+
+                aviatorBtn.className = "flex-1 py-2.5 text-xs font-black uppercase text-center rounded-lg bg-red-600 text-white transition-all shadow-lg shadow-red-950/20";
+                sportsBtn.className = "flex-1 py-2.5 text-xs font-black uppercase text-center rounded-lg text-gray-400 hover:text-white transition-all";
+            }
+        }
+
         function checkUserSession() {
             const authBtn = document.getElementById('authBtn');
             if (currentUser) {
                 authBtn.innerText = currentUser;
-                authBtn.classList.replace('bg-yellow-500', 'bg-gray-800');
-                authBtn.classList.replace('text-gray-950', 'text-gray-400');
+                authBtn.className = "bg-gray-800 text-gray-400 font-bold px-4 py-1.5 rounded-lg text-sm transition-all";
                 authBtn.onclick = logoutUser;
             } else {
                 authBtn.innerText = "Login";
-                authBtn.className = "bg-yellow-500 text-gray-950 font-bold px-4 py-1.5 rounded-lg text-sm transition-all active:scale-95";
+                authBtn.className = "bg-yellow-500 text-gray-950 font-bold px-4 py-1.5 rounded-lg text-sm transition-all";
                 authBtn.onclick = openAuthModal;
             }
         }
@@ -103,19 +164,16 @@
             try {
                 const r = await fetch(`${API_URL}/api/user/profile?username=${currentUser}`);
                 const d = await r.json();
-                document.getElementById('walletBalance').innerText = `${d.currency} ${d.balance.toFixed(2)}`;
-            } catch (err) {
-                console.error("Wallet loading error:", err);
-            }
+                document.getElementById('walletBalance').innerText = `ETB ${d.balance.toFixed(2)}`;
+            } catch (err) { console.error(err); }
         }
 
         async function displayMatches() {
+            if (currentActiveTab !== "sports") return;
             try {
                 const r = await fetch(`${API_URL}/api/matches`);
                 const matches = await r.json();
-                const container = document.getElementById('matchContainer');
-                
-                container.innerHTML = matches.map(m => `
+                document.getElementById('matchContainer').innerHTML = matches.map(m => `
                     <div class="bg-gray-900 rounded-xl border border-gray-800 overflow-hidden shadow-xl">
                         <div class="bg-gray-850 px-3 py-1.5 text-[10px] text-gray-400 flex justify-between border-b border-gray-800">
                             <span>${m.league}</span><span class="text-red-400 font-bold">${m.time}</span>
@@ -125,114 +183,159 @@
                             <div class="flex justify-between font-bold text-sm"><span>${m.awayTeam}</span><span>${m.awayScore}</span></div>
                         </div>
                         <div class="px-3 pb-4 grid grid-cols-3 gap-2">
-                            <button onclick="toggleSelection(this, '${m.homeTeam}', '${m.odds.home}')" class="bg-gray-800 border border-transparent hover:bg-gray-700 rounded-lg p-2 flex flex-col items-center transition-all duration-150">
+                            <button onclick="toggleSelection(this, '${m.homeTeam}', '${m.odds.home}')" class="bg-gray-800 border border-transparent hover:bg-gray-700 rounded-lg p-2 flex flex-col items-center transition-all">
                                 <span class="text-[10px] text-gray-500 font-bold">1</span><span class="text-yellow-500 font-black text-sm">${m.odds.home}</span>
                             </button>
-                            <button onclick="toggleSelection(this, 'Draw', '${m.odds.draw}')" class="bg-gray-800 border border-transparent hover:bg-gray-700 rounded-lg p-2 flex flex-col items-center transition-all duration-150">
+                            <button onclick="toggleSelection(this, 'Draw', '${m.odds.draw}')" class="bg-gray-800 border border-transparent hover:bg-gray-700 rounded-lg p-2 flex flex-col items-center transition-all">
                                 <span class="text-[10px] text-gray-500 font-bold">X</span><span class="text-yellow-500 font-black text-sm">${m.odds.draw}</span>
                             </button>
-                            <button onclick="toggleSelection(this, '${m.awayTeam}', '${m.odds.away}')" class="bg-gray-800 border border-transparent hover:bg-gray-700 rounded-lg p-2 flex flex-col items-center transition-all duration-150">
+                            <button onclick="toggleSelection(this, '${m.awayTeam}', '${m.odds.away}')" class="bg-gray-800 border border-transparent hover:bg-gray-700 rounded-lg p-2 flex flex-col items-center transition-all">
                                 <span class="text-[10px] text-gray-500 font-bold">2</span><span class="text-yellow-500 font-black text-sm">${m.odds.away}</span>
                             </button>
                         </div>
                     </div>
                 `).join('');
-            } catch (err) {
-                console.error("Match engine loading error:", err);
+            } catch (err) { console.error(err); }
+        }
+
+        // ================= AVIATOR REAL-TIME TICKER LOOP =================
+        async function syncAviatorEngine() {
+            try {
+                const r = await fetch(`${API_URL}/api/aviator/state`);
+                const s = await r.json();
+                
+                const display = document.getElementById('aviatorDisplay');
+                const msg = document.getElementById('aviatorMessage');
+                const plane = document.getElementById('planeObject');
+                const btn = document.getElementById('aviatorActionBtn');
+                
+                localMultiplier = s.multiplier;
+
+                // Sync past game results tape
+                document.getElementById('aviatorHistory').innerHTML = s.history.map(h => `
+                    <span class="px-2 py-0.5 rounded-md font-bold ${h >= 2 ? 'bg-purple-950 text-purple-400 border border-purple-800/30' : 'bg-gray-800 text-blue-400'}">${h.toFixed(2)}x</span>
+                `).join('');
+
+                if (s.status === "WAITING") {
+                    display.innerText = `Next round in ${s.timer}s`;
+                    display.className = "text-2xl font-black text-yellow-500";
+                    msg.innerText = "Accepting bets for next flight";
+                    plane.style.opacity = "0";
+                    plane.style.transform = "translate(0px, 0px) scale(0.7)";
+                    
+                    if (!aviatorBetPlaced) {
+                        btn.innerText = "Place Bet";
+                        btn.className = "w-full bg-emerald-500 text-white font-black py-2.5 rounded-xl text-sm uppercase tracking-wider transition-all";
+                    }
+                } 
+                else if (s.status === "FLYING") {
+                    display.innerText = `${s.multiplier.toFixed(2)}x`;
+                    display.className = "text-5xl font-black text-red-500 animate-pulse";
+                    msg.innerText = "The plane is airborne!";
+                    
+                    // Fly the plane up dynamically based on multiplier size
+                    let distance = Math.min(150, (s.multiplier - 1) * 30);
+                    plane.style.opacity = "1";
+                    plane.style.transform = `translate(${distance}px, -${distance/1.5}px) scale(1)`;
+
+                    if (aviatorBetPlaced) {
+                        btn.innerText = `Cash Out (ETB ${(aviatorActiveStake * s.multiplier).toFixed(2)})`;
+                        btn.className = "w-full bg-orange-500 text-gray-950 font-black py-2.5 rounded-xl text-sm uppercase tracking-wider transition-all animate-bounce";
+                    }
+                } 
+                else if (s.status === "CRASHED") {
+                    display.innerText = "FLEW AWAY!";
+                    display.className = "text-3xl font-black text-gray-600";
+                    msg.innerText = `Crashed @ ${s.history[0]}x`;
+                    plane.style.opacity = "0";
+
+                    if (aviatorBetPlaced) {
+                        aviatorBetPlaced = false; // Lost the round
+                        btn.innerText = "Place Bet";
+                        btn.className = "w-full bg-emerald-500 text-white font-black py-2.5 rounded-xl text-sm uppercase tracking-wider transition-all";
+                        alert("💥 The plane flew away before you cashed out!");
+                    }
+                }
+            } catch (err) { console.error(err); }
+        }
+
+        async function handleAviatorAction() {
+            if (!currentUser) return openAuthModal();
+            const btn = document.getElementById('aviatorActionBtn');
+            const stakeInput = document.getElementById('aviatorStake');
+
+            if (!aviatorBetPlaced) {
+                // Placing a bet
+                const amount = parseFloat(stakeInput.value);
+                if (amount <= 0 || isNaN(amount)) return alert("Invalid stake amount");
+
+                try {
+                    const r = await fetch(`${API_URL}/api/bets/place`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ username: currentUser, stake: amount })
+                    });
+                    const res = await r.json();
+                    if (res.success) {
+                        aviatorBetPlaced = true;
+                        aviatorActiveStake = amount;
+                        btn.innerText = "Waiting for Round...";
+                        btn.className = "w-full bg-gray-700 text-gray-400 font-bold py-2.5 rounded-xl text-sm uppercase cursor-not-allowed";
+                        loadUserProfile();
+                    } else {
+                        alert("Insufficient balance!");
+                    }
+                } catch (e) { alert("Bet error"); }
+            } else {
+                // Cashing Out live
+                try {
+                    const r = await fetch(`${API_URL}/api/aviator/cashout`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ username: currentUser, stake: aviatorActiveStake, multiplier: localMultiplier })
+                    });
+                    const res = await r.json();
+                    if (res.success) {
+                        alert(`🎉 Successfully Cashed out at ${localMultiplier.toFixed(2)}x!`);
+                        aviatorBetPlaced = false;
+                        loadUserProfile();
+                    }
+                } catch (e) { alert("Cash out error"); }
             }
         }
 
+        // ================= ORIGINAL SPORTS CONTROLLERS =================
         async function loadBetHistory() {
-            if (!currentUser) {
-                document.getElementById('historyFeed').innerHTML = `<div class="text-center py-8 text-gray-500 text-xs font-semibold">Please login to view bet history.</div>`;
-                return;
-            }
+            if (!currentUser) return;
             try {
                 const r = await fetch(`${API_URL}/api/bets/history?username=${currentUser}`);
                 const bets = await r.json();
                 const feed = document.getElementById('historyFeed');
-                
                 if (bets.length === 0) {
                     feed.innerHTML = `<div class="text-center py-8 text-gray-500 text-xs font-semibold">No active tickets found.</div>`;
                     return;
                 }
-
                 feed.innerHTML = bets.reverse().map(b => {
                     const color = b.status === 'WON' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : 
-                                  b.status === 'LOST' ? 'bg-red-500/20 text-red-400 border-red-500/30' : 
-                                  'bg-yellow-500/10 text-yellow-500 border-yellow-500/20';
+                                  b.status === 'LOST' ? 'bg-red-500/20 text-red-400 border-red-500/30' : 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20';
                     return `
                     <div class="bg-gray-950 border border-gray-800 rounded-xl p-3 shadow-inner">
-                        <div class="flex justify-between mb-2 items-center">
-                            <span class="text-[9px] text-gray-500 font-mono">${b.id}</span>
-                            <span class="text-[9px] font-black px-2 py-0.5 border rounded-full ${color}">${b.status}</span>
-                        </div>
+                        <div class="flex justify-between mb-2 items-center"><span class="text-[9px] text-gray-500 font-mono">${b.id}</span><span class="text-[9px] font-black px-2 py-0.5 border rounded-full ${color}">${b.status}</span></div>
                         <div class="flex justify-between items-end">
-                            <div>
-                                <h4 class="text-xs font-black text-gray-200">${b.selection}</h4>
-                                <p class="text-[10px] text-gray-500 font-medium mt-0.5">ETB ${b.stake.toFixed(2)} @ ${b.odds.toFixed(2)}</p>
-                            </div>
-                            <div class="text-right">
-                                <p class="text-[9px] text-gray-500 font-semibold uppercase">Payout</p>
-                                <p class="text-xs font-black text-emerald-400">ETB ${b.estReturn.toFixed(2)}</p>
-                            </div>
+                            <div><h4 class="text-xs font-black text-gray-200">${b.selection}</h4><p class="text-[10px] text-gray-500 font-medium mt-0.5">ETB ${b.stake.toFixed(2)} @ ${b.odds.toFixed(2)}</p></div>
+                            <div class="text-right"><p class="text-[9px] text-gray-500 font-semibold uppercase">Payout</p><p class="text-xs font-black text-emerald-400">ETB ${b.estReturn.toFixed(2)}</p></div>
                         </div>
                     </div>`;
                 }).join('');
-            } catch (err) {
-                console.error("Error loading history logs:", err);
-            }
-        }
-
-        function openAuthModal() { document.getElementById('authModal').classList.remove('hidden'); }
-        function closeAuthModal() { document.getElementById('authModal').classList.add('hidden'); }
-        
-        function logoutUser() {
-            if(confirm("Do you want to sign out?")) {
-                localStorage.removeItem('bet_username');
-                currentUser = null;
-                document.getElementById('walletBalance').innerText = "ETB 0.00";
-                checkUserSession();
-                clearSlip();
-            }
-        }
-
-        async function handleAuthSubmit() {
-            const input = document.getElementById('usernameInput').value.trim().toLowerCase();
-            if(!input) return alert("Please enter a valid username");
-
-            // Register/Login user session securely via backend
-            try {
-                const r = await fetch(`${API_URL}/api/auth/login`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username: input })
-                });
-                const res = await r.json();
-                
-                if (res.success) {
-                    localStorage.setItem('bet_username', input);
-                    currentUser = input;
-                    closeAuthModal();
-                    checkUserSession();
-                    loadUserProfile();
-                }
-            } catch(e) {
-                alert("Authentication connection failed.");
-            }
+            } catch (err) { console.error(err); }
         }
 
         function toggleSelection(btn, pick, odds) {
-            if (!currentUser) return openAuthModal(); // Prevent unauthenticated users from betting
-            
+            if (!currentUser) return openAuthModal();
             document.querySelectorAll('#matchContainer button').forEach(b => b.classList.remove('border-yellow-500', 'bg-yellow-500/10'));
-            
-            if (currentSelection === pick) {
-                clearSlip();
-            } else {
+            if (currentSelection === pick) { clearSlip(); } else {
                 currentSelection = pick;
                 btn.classList.add('border-yellow-500', 'bg-yellow-500/10');
-                
                 document.getElementById('slipSelection').innerText = `Selection: ${pick}`;
                 document.getElementById('slipOdds').innerText = odds;
                 document.getElementById('betSlip').classList.remove('translate-y-full');
@@ -255,49 +358,45 @@
 
         function toggleHistoryPanel(open) {
             const panel = document.getElementById('historyPanel');
-            if (open) {
-                clearSlip();
-                loadBetHistory();
-                panel.classList.remove('translate-y-full');
-            } else {
-                panel.classList.add('translate-y-full');
-            }
+            if (open) { clearSlip(); loadBetHistory(); panel.classList.remove('translate-y-full'); } else { panel.classList.add('translate-y-full'); }
+        }
+
+        function openAuthModal() { document.getElementById('authModal').classList.remove('hidden'); }
+        function closeAuthModal() { document.getElementById('authModal').classList.add('hidden'); }
+        function logoutUser() { if(confirm("Sign Out?")) { localStorage.removeItem('bet_username'); currentUser = null; checkUserSession(); location.reload(); } }
+
+        async function handleAuthSubmit() {
+            const input = document.getElementById('usernameInput').value.trim().toLowerCase();
+            if(!input) return alert("Enter username");
+            try {
+                const r = await fetch(`${API_URL}/api/auth/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: input }) });
+                const res = await r.json();
+                if (res.success) { localStorage.setItem('bet_username', input); currentUser = input; closeAuthModal(); checkUserSession(); loadUserProfile(); }
+            } catch(e) { alert("Error connecting"); }
         }
 
         async function submitBet() {
             if (!currentSelection || !currentUser) return;
-            const odds = document.getElementById('slipOdds').innerText;
-            const stake = document.getElementById('stakeInput').value;
-
             try {
                 const res = await fetch(`${API_URL}/api/bets/place`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username: currentUser, selection: currentSelection, odds: odds, stake: stake })
+                    body: JSON.stringify({ username: currentUser, selection: currentSelection, odds: document.getElementById('slipOdds').innerText, stake: document.getElementById('stakeInput').value })
                 });
                 const data = await res.json();
-                
-                if (data.success) {
-                    alert("🎉 Bet Placed Successfully!");
-                    loadUserProfile();
-                    clearSlip();
-                } else {
-                    alert(`⚠️ Placement Rejected: ${data.message}`);
-                }
-            } catch (err) {
-                alert("Network communication error processing slip ticket.");
-            }
+                if (data.success) { alert("🎉 Bet Placed!"); loadUserProfile(); clearSlip(); }
+            } catch (err) { alert("Error"); }
         }
 
+        // Run intervals synchronously
         window.onload = () => { 
-            checkUserSession();
-            loadUserProfile(); 
-            displayMatches(); 
-
-            setInterval(() => {
-                displayMatches();
-                loadUserProfile();
-            }, 5000);
+            checkUserSession(); loadUserProfile(); displayMatches(); 
+            
+            // Fast loop for Aviator (100ms updates)
+            setInterval(syncAviatorEngine, 100);
+            
+            // Slow loop for Sports Matches (5 seconds updates)
+            setInterval(() => { displayMatches(); loadUserProfile(); }, 5000);
         };
     </script>
 </body>
