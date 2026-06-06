@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aviator Crash Game Clone</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #1a1d24;
+            color: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .game-container {
+            width: 90%;
+            max-width: 800px;
+            background-color: #242933;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #333a47;
+        }
+
+        .balance-box {
+            background: #2f3645;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-weight: bold;
+            color: #4cd137;
+        }
+
+        .display-area {
+            position: relative;
+            height: 300px;
+            background: radial-gradient(circle, #2f3645 0%, #1a1d24 100%);
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            border: 1px solid #333a47;
+        }
+
+        .multiplier {
+            font-size: 4rem;
+            font-weight: 800;
+            transition: color 0.1s ease;
+            z-index: 10;
+        }
+
+        .multiplier.running { color: #ffffff; }
+        .multiplier.crashed { color: #e74c3c; }
+
+        .plane-icon {
+            position: absolute;
+            font-size: 2rem;
+            bottom: 20px;
+            left: 20px;
+            transition: transform 0.1s linear, opacity 0.3s;
+            opacity: 0;
+        }
+
+        .controls {
+            margin-top: 20px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .bet-box {
+            background: #2f3645;
+            padding: 15px;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        label {
+            font-size: 0.85rem;
+            color: #9aa0a6;
+        }
+
+        input {
+            background: #1a1d24;
+            border: 1px solid #333a47;
+            padding: 10px;
+            color: #fff;
+            border-radius: 6px;
+            font-size: 1.1rem;
+            outline: none;
+        }
+
+        button {
+            border: none;
+            padding: 12px;
+            border-radius: 6px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-bet { background-color: #e74c3c; color: white; }
+        .btn-bet:hover { background-color: #c0392b; }
+        .btn-bet:disabled { background-color: #555; cursor: not-allowed; }
+
+        .btn-cashout { background-color: #2ecc71; color: white; display: none; }
+        .btn-cashout:hover { background-color: #27ae60; }
+
+        .status-msg {
+            text-align: center;
+            margin-top: 15px;
+            font-size: 0.95rem;
+            color: #9aa0a6;
+            min-height: 20px;
+        }
+
+        .history {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 15px;
+            overflow-x: auto;
+            padding-bottom: 5px;
+        }
+
+        .history-badge {
+            background: #2f3645;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        .badge-high { color: #2ecc71; }
+        .badge-low { color: #e74c3c; }
+    </style>
+</head>
+<body>
+
+<div class="game-container">
+    <div class="header">
+        <h2>🛩️ Aviator Clone</h2>
+        <div class="balance-box">Balance: $<span id="balance">1000.00</span></div>
+    </div>
+
+    <div class="history" id="history-container">
+        <!-- Multiplier history will spawn here -->
+    </div>
+
+    <div class="display-area">
+        <div class="multiplier" id="multiplier-display">1.00x</div>
+        <div class="plane-icon" id="plane">🚀</div>
+    </div>
+
+    <div class="controls">
+        <div class="bet-box">
+            <label for="bet-amount">Bet Amount ($)</label>
+            <input type="number" id="bet-amount" value="10" min="1">
+        </div>
+        <div class="bet-box" style="justify-content: flex-end;">
+            <button class="btn-bet" id="bet-btn">PLACE BET</button>
+            <button class="btn-cashout" id="cashout-btn">CASH OUT</button>
+        </div>
+    </div>
+
+    <div class="status-msg" id="status-text">Place a bet to join the next round!</div>
+</div>
+
+<script>
+    // Game State variables
+    let balance = 1000.00;
+    let currentBet = 0;
+    let currentMultiplier = 1.00;
+    let crashPoint = 0;
+    let gameInterval = null;
+    let isPlaying = false; 
+    let hasBetted = false;
+
+    // DOM Elements
+    const balanceEl = document.getElementById('balance');
+    const multiplierEl = document.getElementById('multiplier-display');
+    const planeEl = document.getElementById('plane');
+    const betBtn = document.getElementById('bet-btn');
+    const cashoutBtn = document.getElementById('cashout-btn');
+    const betInput = document.getElementById('bet-amount');
+    const statusEl = document.getElementById('status-text');
+    const historyContainer = document.getElementById('history-container');
+
+    // Generate a house-edge adjusted crash point (Simulating Provably Fair math)
+    function generateCrashPoint() {
+        const e = Math.random();
+        // 3% instant crash house edge (at 1.00x)
+        if (e < 0.03) return 1.00; 
+        
+        // Classic crash math formula: 97 / (100 - Drop percentage)
+        return parseFloat((97 / (100 - Math.random() * 100)).toFixed(2));
+    }
+
+    // Initialize/Prepare Next Round
+    function prepareNextRound() {
+        isPlaying = false;
+        currentMultiplier = 1.00;
+        multiplierEl.textContent = "1.00x";
+        multiplierEl.className = "multiplier running";
+        
+        // Reset plane positioning styles
+        planeEl.style.opacity = 0;
+        planeEl.style.transform = `translate(0px, 0px)`;
+
+        if (hasBetted) {
+            startRound();
+        } else {
+            betBtn.disabled = false;
+            statusEl.textContent = "Waiting for your bet...";
+        }
+    }
+
+    // Start the flying phase
+    function startRound() {
+        isPlaying = true;
+        crashPoint = generateCrashPoint();
+        console.log(`[Server Secret] This round will crash at: ${crashPoint}x`); // Hidden from players in production
+
+        betBtn.style.display = "none";
+        cashoutBtn.style.display = "block";
+        statusEl.textContent = "The plane is airborne! Watch the multiplier.";
+        planeEl.style.opacity = 1;
+
+        let startTime = Date.now();
+
+        gameInterval = setInterval(() => {
+            let elapsed = (Date.now() - startTime) / 1000;
+            
+            // Exponential curve calculation for the multiplier growth
+            currentMultiplier = parseFloat(Math.pow(1.12, elapsed).toFixed(2));
+
+            // Visual update
+            multiplierEl.textContent = currentMultiplier.toFixed(2) + "x";
+            
+            // Move the plane up and to the right dynamically
+            let moveX = Math.min(elapsed * 25, 250);
+            let moveY = Math.min(elapsed * -18, -150);
+            planeEl.style.transform = `translate(${moveX}px, ${moveY}px)`;
+
+            // Check if crashed
+            if (currentMultiplier >= crashPoint) {
+                triggerCrash();
+            }
+        }, 50);
+    }
+
+    function triggerCrash() {
+        clearInterval(gameInterval);
+        multiplierEl.textContent = "FLEW AWAY!";
+        multiplierEl.className = "multiplier crashed";
+        statusEl.textContent = `The plane crashed at ${crashPoint.toFixed(2)}x!`;
+        
+        // Add to history tape
+        addHistoryBadge(crashPoint);
+
+        // Reset system flags
+        hasBetted = false;
+        currentBet = 0;
+
+        // Toggle Buttons back
+        cashoutBtn.style.display = "none";
+        betBtn.style.display = "block";
+        betBtn.disabled = true;
+
+        // Auto-loop to next setup phase after 4 seconds
+        setTimeout(prepareNextRound, 4000);
+    }
+
+    // Button Listeners
+    betBtn.addEventListener('click', () => {
+        let amount = parseFloat(betInput.value);
+
+        if (isNaN(amount) || amount <= 0 || amount > balance) {
+            statusEl.textContent = "Invalid bet amount or insufficient funds.";
+            return;
+        }
+
+        balance -= amount;
+        currentBet = amount;
+        balanceEl.textContent = balance.toFixed(2);
+        
+        hasBetted = true;
+        betBtn.disabled = true;
+        statusEl.textContent = "Bet accepted! Launching shortly...";
+        
+        // Instantly kick off round logic if game isn't moving
+        if (!isPlaying) {
+            setTimeout(startRound, 1000);
+        }
+    });
+
+    cashoutBtn.addEventListener('click', () => {
+        if (!isPlaying || currentBet === 0) return;
+
+        // Calculate winnings
+        let winnings = currentBet * currentMultiplier;
+        balance += winnings;
+        balanceEl.textContent = balance.toFixed(2);
+
+        statusEl.textContent = `Successfully Cashed out! You won $${winnings.toFixed(2)}`;
+        
+        // Protect from multi-cashout during the same loop
+        currentBet = 0; 
+        cashoutBtn.style.display = "none";
+    });
+
+    function addHistoryBadge(val) {
+        const badge = document.createElement('div');
+        badge.className = `history-badge ${val >= 2.0 ? 'badge-high' : 'badge-low'}`;
+        badge.textContent = val.toFixed(2) + "x";
+        historyContainer.prepend(badge);
+    }
+</script>
+
+</body>
+</html>
