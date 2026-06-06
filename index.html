@@ -118,7 +118,6 @@
         let currentActiveTab = "sports";
         const API_URL = window.location.origin;
 
-        // Aviator Game Tracking State
         let aviatorBetPlaced = false;
         let aviatorActiveStake = 0;
         let localMultiplier = 1.00;
@@ -198,7 +197,6 @@
             } catch (err) { console.error(err); }
         }
 
-        // ================= AVIATOR REAL-TIME TICKER LOOP =================
         async function syncAviatorEngine() {
             try {
                 const r = await fetch(`${API_URL}/api/aviator/state`);
@@ -210,20 +208,26 @@
                 const btn = document.getElementById('aviatorActionBtn');
                 
                 localMultiplier = s.multiplier;
+                const key = currentUser ? currentUser.toLowerCase().trim() : "";
 
-                // Sync past game results tape
                 document.getElementById('aviatorHistory').innerHTML = s.history.map(h => `
                     <span class="px-2 py-0.5 rounded-md font-bold ${h >= 2 ? 'bg-purple-950 text-purple-400 border border-purple-800/30' : 'bg-gray-800 text-blue-400'}">${h.toFixed(2)}x</span>
                 `).join('');
 
                 if (s.status === "WAITING") {
-                    display.innerText = `Next round in ${s.timer}s`;
+                    display.innerText = `Next flight in ${s.timer}s`;
                     display.className = "text-2xl font-black text-yellow-500";
-                    msg.innerText = "Accepting bets for next flight";
+                    msg.innerText = "Place your stakes now!";
                     plane.style.opacity = "0";
                     plane.style.transform = "translate(0px, 0px) scale(0.7)";
                     
-                    if (!aviatorBetPlaced) {
+                    if (s.activeBets[key]) {
+                        btn.innerText = "Bet Locked In ✔";
+                        btn.className = "w-full bg-gray-800 text-emerald-400 font-black py-2.5 rounded-xl text-sm uppercase cursor-not-allowed border border-emerald-500/20";
+                    } else if (s.nextRoundBets[key]) {
+                        btn.innerText = "Waiting for Round...";
+                        btn.className = "w-full bg-gray-800 text-gray-500 font-bold py-2.5 rounded-xl text-sm uppercase cursor-not-allowed";
+                    } else {
                         btn.innerText = "Place Bet";
                         btn.className = "w-full bg-emerald-500 text-white font-black py-2.5 rounded-xl text-sm uppercase tracking-wider transition-all";
                     }
@@ -231,29 +235,35 @@
                 else if (s.status === "FLYING") {
                     display.innerText = `${s.multiplier.toFixed(2)}x`;
                     display.className = "text-5xl font-black text-red-500 animate-pulse";
-                    msg.innerText = "The plane is airborne!";
+                    msg.innerText = "Plane is rising...";
                     
-                    // Fly the plane up dynamically based on multiplier size
-                    let distance = Math.min(150, (s.multiplier - 1) * 30);
+                    let distance = Math.min(150, (s.multiplier - 1) * 25);
                     plane.style.opacity = "1";
                     plane.style.transform = `translate(${distance}px, -${distance/1.5}px) scale(1)`;
 
-                    if (aviatorBetPlaced) {
+                    if (s.activeBets[key]) {
+                        aviatorBetPlaced = true; 
+                        aviatorActiveStake = s.activeBets[key];
                         btn.innerText = `Cash Out (ETB ${(aviatorActiveStake * s.multiplier).toFixed(2)})`;
-                        btn.className = "w-full bg-orange-500 text-gray-950 font-black py-2.5 rounded-xl text-sm uppercase tracking-wider transition-all animate-bounce";
+                        btn.className = "w-full bg-orange-500 text-gray-950 font-black py-2.5 rounded-xl text-sm uppercase tracking-wider transition-all scale-100 animate-bounce";
+                    } else if (s.nextRoundBets[key]) {
+                        btn.innerText = "Queued for Next Flight";
+                        btn.className = "w-full bg-gray-800 text-yellow-500 font-bold py-2.5 rounded-xl text-xs uppercase cursor-not-allowed border border-yellow-500/20";
+                    } else {
+                        btn.innerText = "Place Bet (For Next Flight)";
+                        btn.className = "w-full bg-blue-600 text-white font-black py-2.5 rounded-xl text-xs uppercase tracking-wider transition-all";
                     }
                 } 
                 else if (s.status === "CRASHED") {
                     display.innerText = "FLEW AWAY!";
-                    display.className = "text-3xl font-black text-gray-600";
+                    display.className = "text-3xl font-black text-gray-600 animate-none";
                     msg.innerText = `Crashed @ ${s.history[0]}x`;
                     plane.style.opacity = "0";
 
                     if (aviatorBetPlaced) {
-                        aviatorBetPlaced = false; // Lost the round
+                        aviatorBetPlaced = false; 
                         btn.innerText = "Place Bet";
-                        btn.className = "w-full bg-emerald-500 text-white font-black py-2.5 rounded-xl text-sm uppercase tracking-wider transition-all";
-                        alert("💥 The plane flew away before you cashed out!");
+                        btn.className = "w-full bg-emerald-500 text-white font-black py-2.5 rounded-xl text-sm uppercase tracking-wider";
                     }
                 }
             } catch (err) { console.error(err); }
@@ -265,46 +275,35 @@
             const stakeInput = document.getElementById('aviatorStake');
 
             if (!aviatorBetPlaced) {
-                // Placing a bet
                 const amount = parseFloat(stakeInput.value);
                 if (amount <= 0 || isNaN(amount)) return alert("Invalid stake amount");
 
                 try {
-                    const r = await fetch(`${API_URL}/api/bets/place`, {
+                    const r = await fetch(`${API_URL}/api/aviator/bet`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ username: currentUser, stake: amount })
                     });
                     const res = await r.json();
-                    if (res.success) {
-                        aviatorBetPlaced = true;
-                        aviatorActiveStake = amount;
-                        btn.innerText = "Waiting for Round...";
-                        btn.className = "w-full bg-gray-700 text-gray-400 font-bold py-2.5 rounded-xl text-sm uppercase cursor-not-allowed";
-                        loadUserProfile();
-                    } else {
-                        alert("Insufficient balance!");
-                    }
-                } catch (e) { alert("Bet error"); }
+                    if (res.success) { loadUserProfile(); } else { alert(res.message || "Execution Error"); }
+                } catch (e) { alert("Bet transmission failed"); }
             } else {
-                // Cashing Out live
                 try {
                     const r = await fetch(`${API_URL}/api/aviator/cashout`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ username: currentUser, stake: aviatorActiveStake, multiplier: localMultiplier })
+                        body: JSON.stringify({ username: currentUser })
                     });
                     const res = await r.json();
                     if (res.success) {
-                        alert(`🎉 Successfully Cashed out at ${localMultiplier.toFixed(2)}x!`);
+                        alert(`🎉 Cash Out Successful! Received ETB ${res.winAmount}`);
                         aviatorBetPlaced = false;
                         loadUserProfile();
-                    }
+                    } else { alert(res.message || "Cash out rejection."); }
                 } catch (e) { alert("Cash out error"); }
             }
         }
 
-        // ================= ORIGINAL SPORTS CONTROLLERS =================
         async function loadBetHistory() {
             if (!currentUser) return;
             try {
@@ -388,14 +387,9 @@
             } catch (err) { alert("Error"); }
         }
 
-        // Run intervals synchronously
         window.onload = () => { 
             checkUserSession(); loadUserProfile(); displayMatches(); 
-            
-            // Fast loop for Aviator (100ms updates)
             setInterval(syncAviatorEngine, 100);
-            
-            // Slow loop for Sports Matches (5 seconds updates)
             setInterval(() => { displayMatches(); loadUserProfile(); }, 5000);
         };
     </script>
