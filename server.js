@@ -4,23 +4,13 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middleware configurations
 app.use(cors());
 app.use(express.json());
-
-// Serve static frontend UI assets instantly from root directory
 app.use(express.static(path.join(__dirname, '.')));
 
-// =========================================================================
-// 1. DATA CORE STATE (In-Memory Simulation Store)
-// =========================================================================
-let userWallet = {
-    balance: 750.00, // Preloading test account balance with 750 ETB
-    currency: "ETB"
-};
-
-let placedBets = []; // Dynamic historic bet slips ledger array
-
+// --- DATABASE STATE ---
+let userWallet = { balance: 750.00, currency: "ETB" };
+let placedBets = [];
 let liveMatches = [
     {
         id: "m1",
@@ -29,7 +19,9 @@ let liveMatches = [
         awayTeam: "Chelsea",
         homeScore: 0,
         awayScore: 0,
+        minute: 15,
         time: "15' Live",
+        status: "LIVE",
         odds: { home: "1.85", draw: "3.20", away: "4.50" }
     },
     {
@@ -39,51 +31,90 @@ let liveMatches = [
         awayTeam: "Barcelona",
         homeScore: 1,
         awayScore: 1,
+        minute: 42,
         time: "42' Live",
+        status: "LIVE",
         odds: { home: "2.10", draw: "3.50", away: "3.10" }
     }
 ];
 
 // =========================================================================
-// 2. ENDPOINTS & BUSINESS LOGIC ROUTING
+// AUTOMATIC LIVE MATCH SIMULATOR (Runs continuously in the background)
 // =========================================================================
+setInterval(() => {
+    liveMatches.forEach(match => {
+        if (match.status === "LIVE") {
+            // 1. Advance the match timer
+            match.minute += 1;
+            match.time = `${match.minute}' Live`;
 
-// Endpoint A: Fetch the real-time match data list
-app.get('/api/matches', (req, res) => {
-    res.json(liveMatches);
-});
+            // 2. Random Goal Simulator (approx. 1% chance every tick)
+            if (Math.random() < 0.05) {
+                if (Math.random() > 0.5) {
+                    match.homeScore += 1;
+                } else {
+                    match.awayScore += 1;
+                }
+                console.log(`⚽ GOAL! ${match.homeTeam} ${match.homeScore} - ${match.awayScore} ${match.awayTeam}`);
+            }
 
-// Endpoint B: Read current wallet profile account status
-app.get('/api/user/profile', (req, res) => {
-    res.json(userWallet);
-});
+            // 3. Dynamic Odds Fluctuation (Shift odds slightly based on time/scores)
+            let shift = (Math.random() - 0.5) * 0.10;
+            match.odds.home = Math.max(1.10, parseFloat(match.odds.home) + shift).toFixed(2);
+            match.odds.away = Math.max(1.10, parseFloat(match.odds.away) - shift).toFixed(2);
 
-// Endpoint C: Fetch historical bets placed by current session
-app.get('/api/bets/history', (req, res) => {
-    res.json(placedBets);
-});
+            // 4. Match End Trigger (When game hits 90 mins)
+            if (match.minute >= 90) {
+                match.status = "FINISHED";
+                match.time = "Finished";
+                autoSettleMatchBets(match); // Auto-pay winners instantly!
+            }
+        }
+    });
+}, 10000); // Ticks every 10 seconds
 
-// Endpoint D: Process core transactional voucher creation
+// Function to automatically evaluate tickets when a game ends
+function autoSettleMatchBets(finishedMatch) {
+    placedBets.forEach(bet => {
+        if (bet.status === 'OPEN') {
+            let won = false;
+            
+            // Evaluate outcome based on user selection
+            if (bet.selection === finishedMatch.homeTeam && finishedMatch.homeScore > finishedMatch.awayScore) won = true;
+            if (bet.selection === finishedMatch.awayTeam && finishedMatch.awayScore > finishedMatch.homeScore) won = true;
+            if (bet.selection === "Draw" && finishedMatch.homeScore === finishedMatch.awayScore) won = true;
+
+            // Only settle bets belonging to this specific match
+            if (bet.selection === finishedMatch.homeTeam || bet.selection === finishedMatch.awayTeam || bet.selection === "Draw") {
+                if (won) {
+                    bet.status = 'WON';
+                    userWallet.balance += bet.estReturn;
+                    console.log(`🎉 Bet ${bet.id} WON! Paid out ETB ${bet.estReturn}`);
+                } else {
+                    bet.status = 'LOST';
+                    console.log(`❌ Bet ${bet.id} LOST.`);
+                }
+            }
+        }
+    });
+}
+
+// --- API ROUTES ---
+app.get('/api/matches', (req, res) => res.json(liveMatches));
+app.get('/api/user/profile', (req, res) => res.json(userWallet));
+app.get('/api/bets/history', (req, res) => res.json(placedBets));
+
 app.post('/api/bets/place', (req, res) => {
     const { selection, odds, stake } = req.body;
-
-    if (!selection || !odds || !stake) {
-        return res.status(400).json({ success: false, message: "Invalid payload parameters processing slip." });
-    }
-
     const numericStake = parseFloat(stake);
-    if (numericStake <= 0) {
-        return res.status(400).json({ success: false, message: "Stake balance parameters must exceed zero." });
-    }
 
     if (numericStake > userWallet.balance) {
-        return res.status(400).json({ success: false, message: "Insufficient ETB balance inside your digital wallet." });
+        return res.status(400).json({ success: false, message: "Insufficient balance." });
     }
 
-    // Deduct active funds from state profile structure
     userWallet.balance -= numericStake;
 
-    const transactionRecord = {
+    const ticket = {
         id: 'TX_' + Math.random().toString(36).substr(2, 9).toUpperCase(),
         selection,
         odds: parseFloat(odds),
@@ -93,63 +124,10 @@ app.post('/api/bets/place', (req, res) => {
         timestamp: new Date()
     };
 
-    placedBets.push(transactionRecord);
-
-    res.json({
-        success: true,
-        message: "Bet voucher accepted and registered into backend database logs!",
-        betId: transactionRecord.id,
-        newBalance: userWallet.balance
-    });
+    placedBets.push(ticket);
+    res.json({ success: true, message: "Bet Placed!", betId: ticket.id, newBalance: userWallet.balance });
 });
 
-// Endpoint E: SECRET ADMIN SETTLEMENT SIMULATOR ROUTE
-app.get('/api/admin/settle-results', (req, res) => {
-    // 1. Force state updates simulation (Liverpool wins 1-0, Real Madrid wins 2-1)
-    liveMatches[0].homeScore = 1;
-    liveMatches[0].awayScore = 0;
-    liveMatches[0].time = "Finished";
-    
-    liveMatches[1].homeScore = 2;
-    liveMatches[1].awayScore = 1;
-    liveMatches[1].time = "Finished";
+app.get('*', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
 
-    let totalPaidOut = 0;
-
-    // 2. Compute outstanding ticket validations
-    placedBets.forEach(bet => {
-        if (bet.status === 'OPEN') {
-            let won = false;
-
-            // Mapping selection evaluations against simulation rules
-            if (bet.selection === "Liverpool" && liveMatches[0].homeScore > liveMatches[0].awayScore) won = true;
-            if (bet.selection === "Real Madrid" && liveMatches[1].homeScore > liveMatches[1].awayScore) won = true;
-            
-            if (won) {
-                bet.status = 'WON';
-                userWallet.balance += bet.estReturn; // Credit client purse
-                totalPaidOut += bet.estReturn;
-            } else {
-                bet.status = 'LOST';
-            }
-        }
-    });
-
-    res.json({
-        success: true,
-        message: "All current sports lines successfully settled and tickets processed!",
-        totalPaidOut: `ETB ${totalPaidOut.toFixed(2)}`,
-        systemWalletBalance: `ETB ${userWallet.balance.toFixed(2)}`
-    });
-});
-
-// =========================================================================
-// 3. INITIALIZATION AND CATCH-ALL ROUTER MAP
-// =========================================================================
-app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html'));
-});
-
-app.listen(PORT, () => {
-    console.log(`Live application engine mapping requests seamlessly on port ${PORT}`);
-});
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
