@@ -2,238 +2,293 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Crash Game Platform</title>
-    <!-- Tailwind CSS for styling -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Addis Bet Game Client</title>
+    <!-- Tailwind CSS for high-fidelity UI styling -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @keyframes pulse-glow {
-            0%, 100% { opacity: 0.6; }
-            50% { opacity: 1; filter: drop-shadow(0 0 15px #10B981); }
+        /* Modern aesthetic styling mimicking active platform states */
+        .game-canvas-bg {
+            background: radial-gradient(circle at 50% 50%, #1e1b4b 0%, #090514 100%);
         }
-        .multiplier-glow {
-            animation: pulse-glow 2s infinite;
+        .glow-green:focus {
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.6);
+        }
+        /* Custom scrollbar matching dark mode themes */
+        ::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0b0f19;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1e293b;
+            border-radius: 2px;
         }
     </style>
 </head>
-<body class="bg-slate-950 text-slate-100 font-sans min-h-screen flex flex-col justify-between">
+<body class="bg-[#0b0c14] text-slate-200 font-sans min-h-screen flex flex-col select-none antialiased">
 
-    <!-- Top Navigation Bar -->
-    <header class="bg-slate-900 border-b border-slate-800 px-4 py-3 flex justify-between items-center shadow-lg">
-        <div class="flex items-center space-x-3">
-            <span class="text-xl font-black tracking-wider text-amber-500 uppercase">Addis<span class="text-emerald-500">Games</span></span>
-            <span class="bg-slate-800 text-xs px-2 py-1 rounded text-slate-400 font-mono">v2.4.0</span>
-        </div>
-        <div class="flex items-center space-x-4">
-            <div class="bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 flex items-center space-x-2">
-                <span class="text-xs text-slate-500 font-medium">BALANCE:</span>
-                <span class="text-emerald-400 font-mono font-bold" id="user-balance">5,430.50 ETB</span>
+    <!-- Sticky Main App Header -->
+    <header class="bg-[#121424] border-b border-slate-800/80 px-3 py-2 flex justify-between items-center sticky top-0 z-50 shadow-md">
+        <div class="flex items-center space-x-2">
+            <div class="bg-amber-500 text-slate-950 font-black px-2 py-1 rounded text-xs tracking-tighter uppercase">
+                ADDIS
             </div>
-            <button class="bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold px-4 py-1.5 rounded-lg text-sm transition-all shadow-md">
-                Deposit
-            </button>
+            <span class="text-xs font-bold text-slate-400 tracking-wider">GAME HUB</span>
+        </div>
+        
+        <!-- Live Wallet Info & Profile Control Panel -->
+        <div class="flex items-center space-x-2">
+            <div class="bg-[#090a0f] border border-slate-800 rounded px-2.5 py-1 flex items-center space-x-1.5">
+                <span class="text-[10px] text-slate-500 font-bold">ETB</span>
+                <span id="wallet-display" class="text-xs font-mono font-black text-emerald-400">1,250.00</span>
+            </div>
+            <div class="w-7 h-7 bg-slate-800 rounded-full border border-slate-700 flex items-center justify-between overflow-hidden">
+                <span class="text-[10px] font-bold mx-auto text-slate-400">U1</span>
+            </div>
         </div>
     </header>
 
-    <!-- Main Content Grid -->
-    <main class="flex-1 p-4 grid grid-cols-1 lg:grid-cols-4 gap-4 max-w-7xl mx-auto w-full">
+    <!-- Multiplier History Top Ribbon Bar -->
+    <div class="bg-[#090a10] border-b border-slate-900 px-2 py-1.5 flex items-center space-x-1.5 overflow-x-auto whitespace-nowrap z-40">
+        <span class="bg-[#16192e] text-emerald-400 text-[10px] font-mono font-bold px-2 py-0.5 rounded-full border border-emerald-950">1.82x</span>
+        <span class="bg-[#16192e] text-purple-400 text-[10px] font-mono font-bold px-2 py-0.5 rounded-full border border-purple-950">12.40x</span>
+        <span class="bg-[#16192e] text-blue-400 text-[10px] font-mono font-bold px-2 py-0.5 rounded-full border border-blue-950">2.15x</span>
+        <span class="bg-[#16192e] text-rose-500 text-[10px] font-mono font-bold px-2 py-0.5 rounded-full border border-rose-950">1.02x</span>
+        <span class="bg-[#16192e] text-emerald-400 text-[10px] font-mono font-bold px-2 py-0.5 rounded-full border border-emerald-950">3.50x</span>
+        <span class="bg-[#16192e] text-emerald-400 text-[10px] font-mono font-bold px-2 py-0.5 rounded-full border border-emerald-950">1.99x</span>
+        <span class="bg-[#16192e] text-amber-500 text-[10px] font-mono font-bold px-2 py-0.5 rounded-full border border-amber-950">5.00x</span>
+    </div>
+
+    <!-- Main Mobile Responsive Workboard View -->
+    <main class="flex-1 flex flex-col p-2 space-y-2 max-w-md mx-auto w-full">
         
-        <!-- Left Column: Bets Dashboard / History -->
-        <section class="lg:col-span-1 bg-slate-900 rounded-xl border border-slate-800 flex flex-col overflow-hidden h-[500px] lg:h-auto">
-            <div class="flex border-b border-slate-800 text-sm font-semibold">
-                <button class="flex-1 py-3 text-center border-b-2 border-emerald-500 bg-slate-850 text-emerald-400">All Bets</button>
-                <button class="flex-1 py-3 text-center text-slate-400 hover:text-slate-200">My Bets</button>
-            </div>
+        <!-- Live Graph Simulator Node Canvas Container -->
+        <section class="game-canvas-bg border border-slate-800/60 rounded-xl h-48 relative flex flex-col justify-center items-center overflow-hidden shadow-inner">
             
-            <!-- Live Betting Table Stats -->
-            <div class="p-3 bg-slate-950/50 flex justify-between text-xs text-slate-500 font-mono">
-                <span>All Bets: <span class="text-slate-300">142</span></span>
-                <span>Total: <span class="text-emerald-500">23,410 ETB</span></span>
+            <!-- Absolute Positioning Layout Indicators -->
+            <div class="absolute top-2 left-3 bg-black/40 backdrop-blur-xs text-[10px] px-1.5 py-0.5 rounded text-slate-400 font-mono flex items-center space-x-1">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></span>
+                <span>LIVE SESSION</span>
             </div>
 
-            <!-- Scrollable Bet List -->
-            <div class="flex-1 overflow-y-auto p-2 space-y-1.5 font-mono text-xs">
-                <!-- Row Item Sample -->
-                <div class="flex justify-between items-center p-2 bg-slate-950 rounded border border-slate-850">
-                    <span class="text-slate-400 truncate w-20">user_***43</span>
-                    <span class="text-slate-300">150 ETB</span>
-                    <span class="text-emerald-500 font-bold">2.40x</span>
-                    <span class="text-emerald-400 font-bold">+360 ETB</span>
-                </div>
-                <div class="flex justify-between items-center p-2 bg-slate-950 rounded border border-slate-850">
-                    <span class="text-slate-400 truncate w-20">ethio_bet</span>
-                    <span class="text-slate-300">500 ETB</span>
-                    <span class="text-slate-500">--</span>
-                    <span class="text-slate-500">Running</span>
-                </div>
-                <div class="flex justify-between items-center p-2 bg-slate-950 rounded border border-slate-850 opacity-60">
-                    <span class="text-slate-400 truncate w-20">kebe_99</span>
-                    <span class="text-slate-300">1,000 ETB</span>
-                    <span class="text-rose-500 font-bold">Crashed</span>
-                    <span class="text-rose-500">0 ETB</span>
-                </div>
+            <!-- Central Multiplier Presentation Text Node -->
+            <div class="text-center z-10 transition-all duration-75">
+                <div id="canvas-ticker" class="text-5xl font-black font-mono tracking-tight text-slate-100">1.00x</div>
+                <div id="canvas-status" class="text-[9px] text-slate-500 tracking-widest uppercase mt-1 font-bold">Waiting for next round</div>
             </div>
+
+            <!-- Vector Line Graph Path Overlay Simulating Flight Curves -->
+            <svg class="absolute bottom-0 left-0 w-full h-full pointer-events-none" viewBox="0 0 400 200">
+                <path id="graph-curve" d="M 0 200 Q 150 200 400 200" fill="none" stroke="#f59e0b" stroke-width="3" class="transition-all duration-100"/>
+            </svg>
         </section>
 
-        <!-- Right / Center Area: Main Graphic Display & Controls -->
-        <section class="lg:col-span-3 flex flex-col space-y-4">
+        <!-- Dynamic Control Switch Tabs (Single Bet vs Dual Split Layout) -->
+        <div class="grid grid-cols-2 bg-[#121424] rounded-lg p-1 border border-slate-800/40 text-xs font-bold text-center">
+            <button id="tab-single" onclick="switchBetMode('single')" class="py-1.5 rounded bg-[#1c1e36] text-amber-400 shadow-xs">Single Bet</button>
+            <button id="tab-double" onclick="switchBetMode('double')" class="py-1.5 rounded text-slate-400 hover:text-slate-200">Auto Panel</button>
+        </div>
+
+        <!-- Bet Processing Form Card Block -->
+        <section class="bg-[#121424] border border-slate-800/80 rounded-xl p-3 space-y-3 shadow-lg">
             
-            <!-- History Multiplier Ribbon -->
-            <div class="bg-slate-900 border border-slate-800 p-2 rounded-lg flex items-center space-x-2 overflow-x-auto whitespace-nowrap">
-                <span class="text-xs text-slate-500 font-semibold uppercase pr-2 border-r border-slate-800">History:</span>
-                <span class="bg-slate-950 text-purple-400 text-xs font-bold px-2 py-1 rounded border border-purple-900/50">14.50x</span>
-                <span class="bg-slate-950 text-emerald-400 text-xs font-bold px-2 py-1 rounded border border-emerald-900/50">2.10x</span>
-                <span class="bg-slate-950 text-rose-400 text-xs font-bold px-2 py-1 rounded border border-rose-900/50">1.05x</span>
-                <span class="bg-slate-950 text-emerald-400 text-xs font-bold px-2 py-1 rounded border border-emerald-900/50">3.89x</span>
-                <span class="bg-slate-950 text-amber-400 text-xs font-bold px-2 py-1 rounded border border-amber-900/50">1.95x</span>
+            <!-- Quick Stake Increment Switch Grid -->
+            <div class="grid grid-cols-4 gap-1">
+                <button onclick="setQuickStake(50)" class="bg-[#191c33] hover:bg-[#202442] active:bg-slate-900 text-xs font-mono py-1.5 rounded font-bold text-slate-300 border border-slate-800/30">50</button>
+                <button onclick="setQuickStake(100)" class="bg-[#191c33] hover:bg-[#202442] active:bg-slate-900 text-xs font-mono py-1.5 rounded font-bold text-slate-300 border border-slate-800/30">100</button>
+                <button onclick="setQuickStake(200)" class="bg-[#191c33] hover:bg-[#202442] active:bg-slate-900 text-xs font-mono py-1.5 rounded font-bold text-slate-300 border border-slate-800/30">200</button>
+                <button onclick="setQuickStake(500)" class="bg-[#191c33] hover:bg-[#202442] active:bg-slate-900 text-xs font-mono py-1.5 rounded font-bold text-slate-300 border border-slate-800/30">500</button>
             </div>
 
-            <!-- Live Game Display Window -->
-            <div class="relative bg-slate-900 border border-slate-800 rounded-xl h-64 sm:h-80 flex flex-col justify-center items-center overflow-hidden shadow-inner">
-                <!-- Decorative Grid Lines Background -->
-                <div class="absolute inset-0 bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px),linear-gradient(to_bottom,#1e293b_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-30"></div>
-                
-                <!-- Live Numerical Indicator -->
-                <div class="text-center z-10">
-                    <h1 id="live-multiplier" class="text-6xl sm:text-7xl font-black font-mono tracking-tight text-emerald-400 multiplier-glow">1.00x</h1>
-                    <p id="game-status-label" class="text-xs text-slate-400 tracking-widest uppercase mt-2 font-medium">Current Payout</p>
+            <!-- Value Parameter Input Modifiers -->
+            <div class="space-y-2">
+                <div class="bg-[#090a10] border border-slate-800/80 rounded-lg p-2 flex justify-between items-center">
+                    <div class="flex flex-col">
+                        <span class="text-[9px] text-slate-500 font-bold uppercase">BET AMOUNT</span>
+                        <input type="number" id="input-stake" value="100" class="bg-transparent text-amber-400 font-mono font-black text-lg focus:outline-none w-24">
+                    </div>
+                    <div class="flex space-x-1">
+                        <button onclick="multiplyStake(0.5)" class="bg-[#16182c] text-slate-400 font-mono px-2 py-1 text-xs rounded border border-slate-800 font-bold">½</button>
+                        <button onclick="multiplyStake(2)" class="bg-[#16182c] text-slate-400 font-mono px-2 py-1 text-xs rounded border border-slate-800 font-bold">2x</button>
+                    </div>
                 </div>
 
-                <!-- Simulation Progress Line/Vector (Mock Canvas Visual overlay) -->
-                <svg class="absolute bottom-0 left-0 w-full h-full pointer-events-none opacity-20" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M 0 320 Q 300 280 600 150 T 1200 0" fill="none" stroke="#10B981" stroke-width="4"/>
-                </svg>
+                <div class="bg-[#090a10] border border-slate-800/80 rounded-lg p-2 flex justify-between items-center">
+                    <div class="flex flex-col">
+                        <span class="text-[9px] text-slate-500 font-bold uppercase">AUTO CASHOUT MULTIPLIER</span>
+                        <input type="number" id="input-cashout" value="2.00" step="0.10" class="bg-transparent text-purple-400 font-mono font-black text-base focus:outline-none w-24">
+                    </div>
+                    <span class="text-[10px] text-slate-600 font-mono font-bold pr-1">PROVABLY FAIR</span>
+                </div>
             </div>
 
-            <!-- Multi-Panel Betting Controls Terminal -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <!-- Control Panel 1 -->
-                <div class="bg-slate-900 border border-slate-800 p-4 rounded-xl space-y-4">
-                    <div class="flex justify-between items-center">
-                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Bet Configuration</span>
-                        <span class="text-xs text-slate-500 font-mono">Min: 10 / Max: 10,000</span>
-                    </div>
+            <!-- Giant Colored Core Action Execution Button Trigger -->
+            <button id="core-action-trigger" onclick="handleActionCycle()" class="w-full bg-emerald-500 hover:bg-emerald-600 active:scale-[0.99] transition-all text-slate-950 font-black text-center py-3.5 rounded-xl uppercase tracking-wider text-base shadow-lg shadow-emerald-950/20 glow-green">
+                Place Bet
+            </button>
+        </section>
 
-                    <!-- Input Fields -->
-                    <div class="grid grid-cols-2 gap-2">
-                        <div>
-                            <label class="block text-[11px] text-slate-500 uppercase font-bold mb-1">Bet Amount (ETB)</label>
-                            <input type="number" id="bet-amount" value="100" class="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500 focus:outline-none rounded-lg py-2 px-3 font-mono text-emerald-400 text-lg font-bold">
-                        </div>
-                        <div>
-                            <label class="block text-[11px] text-slate-500 uppercase font-bold mb-1">Auto Cashout</label>
-                            <input type="number" id="auto-cashout" value="2.00" step="0.1" class="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500 focus:outline-none rounded-lg py-2 px-3 font-mono text-amber-400 text-lg font-bold">
-                        </div>
-                    </div>
+        <!-- Real-time Active Leaderboard / Feed Tab Section -->
+        <section class="bg-[#121424] border border-slate-800/80 rounded-xl flex-1 flex flex-col overflow-hidden min-h-[160px]">
+            <div class="px-3 py-2 border-b border-slate-800 flex justify-between items-center bg-[#0d0f1a]">
+                <span class="text-[10px] font-bold tracking-wider text-slate-400 uppercase">Live Active Bets</span>
+                <span class="bg-[#191b30] text-emerald-400 text-[9px] font-mono font-bold px-2 py-0.5 rounded" id="live-count-badge">84 Players</span>
+            </div>
 
-                    <!-- Instant Modifier Tags -->
-                    <div class="grid grid-cols-4 gap-1.5 text-xs font-mono font-bold text-slate-400">
-                        <button onclick="adjustBet(10)" class="bg-slate-950 border border-slate-850 hover:bg-slate-800 py-1 rounded transition">+10</button>
-                        <button onclick="adjustBet(50)" class="bg-slate-950 border border-slate-850 hover:bg-slate-800 py-1 rounded transition">+50</button>
-                        <button onclick="multiplyBet(2)" class="bg-slate-950 border border-slate-850 hover:bg-slate-800 py-1 rounded transition">2x</button>
-                        <button onclick="multiplyBet(0.5)" class="bg-slate-950 border border-slate-850 hover:bg-slate-800 py-1 rounded transition">1/2</button>
-                    </div>
-
-                    <!-- Big Action Trigger Button -->
-                    <button id="action-btn" onclick="toggleGameSimulation()" class="w-full bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-black tracking-wide text-lg py-3 rounded-xl transition-all shadow-lg transform active:scale-[0.98]">
-                        PLACE BET
-                    </button>
+            <!-- Feed Log Data Loop Output -->
+            <div class="p-1 overflow-y-auto space-y-1 text-[11px] font-mono flex-1 bg-[#090a0f]/40">
+                <div class="flex justify-between items-center p-2 bg-[#0d0f1c]/60 rounded border border-slate-900">
+                    <span class="text-slate-400 font-sans">User_ethio99</span>
+                    <span class="text-slate-300 font-bold">150 ETB</span>
+                    <span class="text-emerald-400 font-bold">1.45x</span>
+                    <span class="text-emerald-500 font-black">+217.50</span>
                 </div>
-
-                <!-- Control Panel 2 (Auto / Secondary Strategy Panel) -->
-                <div class="bg-slate-900 border border-slate-800 p-4 rounded-xl flex flex-col justify-between opacity-50 select-none">
-                    <div class="flex justify-between items-center mb-2">
-                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Automated Betting System</span>
-                        <span class="bg-slate-950 text-[10px] text-amber-500 font-mono px-1.5 py-0.5 rounded border border-amber-900/40">PREMIUM ONLY</span>
-                    </div>
-                    <p class="text-xs text-slate-500 leading-relaxed">
-                        Configure advanced Martingale sequences, auto-stop triggers based on net wins/losses, and automated multi-bet distribution pipelines.
-                    </p>
-                    <div class="mt-4 pt-4 border-t border-slate-850 flex items-center justify-between">
-                        <div class="flex space-x-2">
-                            <div class="w-3 h-3 rounded-full bg-slate-800"></div>
-                            <div class="w-3 h-3 rounded-full bg-slate-800"></div>
-                        </div>
-                        <span class="text-xs font-mono text-slate-600">Feature locked</span>
-                    </div>
+                <div class="flex justify-between items-center p-2 bg-[#0d0f1c]/60 rounded border border-slate-900">
+                    <span class="text-slate-400 font-sans">Abebe_K</span>
+                    <span class="text-slate-300 font-bold">500 ETB</span>
+                    <span class="text-slate-600">--</span>
+                    <span class="text-amber-500 animate-pulse font-bold">In Play</span>
+                </div>
+                <div class="flex justify-between items-center p-2 bg-[#0d0f1c]/60 rounded border border-slate-900 opacity-50">
+                    <span class="text-slate-400 font-sans">Solomon_Bet</span>
+                    <span class="text-slate-300 font-bold">1,000 ETB</span>
+                    <span class="text-rose-500">Crashed</span>
+                    <span class="text-rose-500">0.00</span>
                 </div>
             </div>
         </section>
     </main>
 
-    <!-- Global Footer Stats -->
-    <footer class="bg-slate-950 border-t border-slate-900 px-4 py-2.5 text-center text-xs text-slate-600 font-mono">
-        Secured connection via industry-standard RNG engines. Provably fair hashes verification available on public nodes.
-    </footer>
-
-    <!-- Logic Engine Script -->
+    <!-- UI Interaction State Script Controller -->
     <script>
-        let isRunning = false;
-        let counterInterval;
-        let currentMultiplier = 1.00;
+        let gameState = 'idle'; // Options: 'idle' | 'running' | 'cashed_out' | 'crashed'
+        let currentLoopMultiplier = 1.00;
+        let runningInterval;
+        let accountBalance = 1250.00;
 
-        function toggleGameSimulation() {
-            const btn = document.getElementById('action-btn');
-            const display = document.getElementById('live-multiplier');
-            const label = document.getElementById('game-status-label');
+        function handleActionCycle() {
+            const btn = document.getElementById('core-action-trigger');
+            const ticker = document.getElementById('canvas-ticker');
+            const status = document.getElementById('canvas-status');
+            const stakeInput = document.getElementById('input-stake');
+            const balanceDisplay = document.getElementById('wallet-display');
+            const curve = document.getElementById('graph-curve');
 
-            if (!isRunning) {
-                // Reset state parameters
-                isRunning = true;
-                currentMultiplier = 1.00;
-                display.innerText = "1.00x";
-                display.classList.remove('text-rose-500');
-                display.classList.add('text-emerald-400');
-                label.innerText = "Rocket Ascending...";
+            let betValue = parseFloat(stakeInput.value) || 0;
+
+            if (gameState === 'idle') {
+                if (betValue > accountBalance) {
+                    alert("Insufficient balance for this operation.");
+                    return;
+                }
+
+                // Deduct Balance and initialize layout state
+                accountBalance -= betValue;
+                balanceDisplay.innerText = accountBalance.toFixed(2);
+
+                gameState = 'running';
+                currentLoopMultiplier = 1.00;
+                ticker.innerText = "1.00x";
+                ticker.className = "text-5xl font-black font-mono tracking-tight text-emerald-400";
+                status.innerText = "GROWING MULTIPLIER...";
                 
                 btn.innerText = "CASH OUT";
-                btn.className = "w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-black tracking-wide text-lg py-3 rounded-xl transition-all shadow-lg transform active:scale-[0.98]";
+                btn.className = "w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-center py-3.5 rounded-xl uppercase tracking-wider text-base shadow-lg";
 
-                // Incremental math loop setup
-                counterInterval = setInterval(() => {
-                    // Random growth delta
-                    currentMultiplier += (0.01 + (currentMultiplier * 0.002));
-                    display.innerText = currentMultiplier.toFixed(2) + "x";
+                // Begin Mathematical Engine Loop Execution
+                runningInterval = setInterval(() => {
+                    currentLoopMultiplier += (0.01 + (currentLoopMultiplier * 0.003));
+                    ticker.innerText = currentLoopMultiplier.toFixed(2) + "x";
 
-                    // Simulate a crash algorithm probability
-                    if (Math.random() < 0.015 && currentMultiplier > 1.2) {
-                        triggerCrash();
+                    // Dynamically animate the vector line curve path coordinates based on the multiplier
+                    let progressX = Math.min(400, 50 + (currentLoopMultiplier * 60));
+                    let progressY = Math.max(40, 200 - (currentLoopMultiplier * 25));
+                    curve.setAttribute('d', `M 0 200 Q ${progressX / 2} 200 ${progressX} ${progressY}`);
+
+                    // Read Auto Cashout Limit Parameter
+                    let autoLimit = parseFloat(document.getElementById('input-cashout').value) || 999;
+                    if (currentLoopMultiplier >= autoLimit) {
+                        triggerManualCashout();
                     }
-                }, 80);
+
+                    // Generate a random probability distribution trigger to calculate crashes
+                    if (Math.random() < 0.012 && currentLoopMultiplier > 1.15) {
+                        triggerSystemCrash();
+                    }
+                }, 70);
+
+            } else if (gameState === 'running') {
+                triggerManualCashout();
             } else {
-                // User manual cashout execution path
-                clearInterval(counterInterval);
-                isRunning = false;
-                label.innerText = "Success! Winnings credited.";
-                btn.innerText = "PLACE BET";
-                btn.className = "w-full bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-black tracking-wide text-lg py-3 rounded-xl transition-all shadow-lg transform active:scale-[0.98]";
-                alert(`Cashed out successfully at ${currentMultiplier.toFixed(2)}x!`);
+                // Reset platform state back to configuration mode
+                gameState = 'idle';
+                ticker.className = "text-5xl font-black font-mono tracking-tight text-slate-100";
+                ticker.innerText = "1.00x";
+                status.innerText = "Waiting for next round";
+                curve.setAttribute('d', "M 0 200 Q 150 200 400 200");
+                btn.innerText = "Place Bet";
+                btn.className = "w-full bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-black text-center py-3.5 rounded-xl uppercase tracking-wider text-base shadow-lg glow-green";
             }
         }
 
-        function triggerCrash() {
-            clearInterval(counterInterval);
-            isRunning = false;
-            const btn = document.getElementById('action-btn');
-            const display = document.getElementById('live-multiplier');
-            const label = document.getElementById('game-status-label');
+        function triggerManualCashout() {
+            clearInterval(runningInterval);
+            gameState = 'cashed_out';
+            const btn = document.getElementById('core-action-trigger');
+            const status = document.getElementById('canvas-status');
+            const stakeInput = document.getElementById('input-stake');
+            const balanceDisplay = document.getElementById('wallet-display');
 
-            display.classList.remove('text-emerald-400');
-            display.classList.add('text-rose-500');
-            label.innerText = "Flew Away! (Crashed)";
+            let betValue = parseFloat(stakeInput.value) || 0;
+            let winAmount = betValue * currentLoopMultiplier;
+            accountBalance += winAmount;
+            balanceDisplay.innerText = accountBalance.toFixed(2);
+
+            status.innerHTML = `<span class="text-emerald-400 font-bold">WON +${winAmount.toFixed(2)} ETB</span>`;
+            btn.innerText = "PREPARE NEXT ROUND";
+            btn.className = "w-full bg-slate-800 hover:bg-slate-700 text-slate-200 font-black text-center py-3.5 rounded-xl uppercase tracking-wider text-base shadow-lg";
+        }
+
+        function triggerSystemCrash() {
+            clearInterval(runningInterval);
+            gameState = 'crashed';
+            const btn = document.getElementById('core-action-trigger');
+            const ticker = document.getElementById('canvas-ticker');
+            const status = document.getElementById('canvas-status');
+
+            ticker.className = "text-5xl font-black font-mono tracking-tight text-rose-500";
+            status.innerHTML = `<span class="text-rose-500 font-bold">FLEW AWAY AT ${currentLoopMultiplier.toFixed(2)}x</span>`;
             
-            btn.innerText = "PLACE BET";
-            btn.className = "w-full bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-black tracking-wide text-lg py-3 rounded-xl transition-all shadow-lg transform active:scale-[0.98]";
+            btn.innerText = "PREPARE NEXT ROUND";
+            btn.className = "w-full bg-slate-800 hover:bg-slate-700 text-slate-200 font-black text-center py-3.5 rounded-xl uppercase tracking-wider text-base shadow-lg";
         }
 
-        function adjustBet(val) {
-            const el = document.getElementById('bet-amount');
-            el.value = parseInt(el.value || 0) + val;
+        function setQuickStake(val) {
+            if (gameState !== 'running') {
+                document.getElementById('input-stake').value = val;
+            }
         }
 
-        function multiplyBet(factor) {
-            const el = document.getElementById('bet-amount');
-            el.value = Math.floor(parseInt(el.value || 0) * factor);
+        function multiplyStake(factor) {
+            if (gameState !== 'running') {
+                let el = document.getElementById('input-stake');
+                el.value = Math.max(10, Math.floor(parseFloat(el.value || 0) * factor));
+            }
+        }
+
+        function switchBetMode(mode) {
+            const singleBtn = document.getElementById('tab-single');
+            const doubleBtn = document.getElementById('tab-double');
+            if (mode === 'single') {
+                singleBtn.className = "py-1.5 rounded bg-[#1c1e36] text-amber-400 shadow-xs";
+                doubleBtn.className = "py-1.5 rounded text-slate-400 hover:text-slate-200";
+            } else {
+                doubleBtn.className = "py-1.5 rounded bg-[#1c1e36] text-amber-400 shadow-xs";
+                singleBtn.className = "py-1.5 rounded text-slate-400 hover:text-slate-200";
+            }
         }
     </script>
 </body>
